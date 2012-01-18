@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>XHR Test</title>
+
+	<script>
+		var dojoConfig = {
+			baseUrl: '../..',
+			async: true,
+			packages: [
+				'dojo',
+				'request',
+				{ name: 'es5-shim', location: 'es5-shim', main: 'es5-shim' }
+			]
+		};
+	</script>
+	<script src="../../dojo/dojo.js"></script>
+	<script>
+		require(["request", "request/script"], function(request, script){
+			request('GET', 'data.json', { handleAs: 'json' }).then(function(responseData){
+				console.log(responseData);
+			}, function(err){
+				console.log(err);
+			});
+		});
+	</script>
+</head>
+<body>
+</body>
+</html>
