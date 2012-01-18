@@ -17,6 +17,12 @@ define(["exports"], function(exports){
 		};
 	};
 
+	exports.addCommonMethods = function(transport){
+		['GET', 'POST', 'PUT', 'DELETE'].forEach(function(method){
+			transport[(method == 'DELETE' ? 'DEL' : method).toLowerCase()] = exports.curry(transport, method);
+		});
+	};
+
 	exports.createMatcher = function(m, transport){
 		var matcher;
 		if(m.test){
