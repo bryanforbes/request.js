@@ -1,7 +1,8 @@
 define([
-	'./fallback!',
+	'require',
+	'./default!platform',
 	'./util'
-], function(fallbackTransport, util){
+], function(require, fallbackTransport, util){
 	var registry = [];
 
 	function transport(method, url, options){
@@ -30,6 +31,18 @@ define([
 				}
 			}
 		};
+	};
+
+	transport.load = function(id, parentRequire, loaded, config){
+		if(id){
+			// if there's an id, load and set the fallback transport
+			require([id], function(fallback){
+				fallbackTransport = fallback;
+				loaded(transport);
+			});
+		}else{
+			loaded(transport);
+		}
 	};
 
 	util.addCommonMethods(transport);

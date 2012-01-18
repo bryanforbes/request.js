@@ -1,18 +1,25 @@
 define(['exports', 'require', 'dojo/has'], function(exports, require, has){
-	var defId = has('config-defaultTransport');
+	var defId = has('config-defaultTransport'),
+		platformId;
 
-	if(!defId){
-		if(has('host-browser')){
-			defId = './xhr';
-		}else if(has('host-node')){
-			defId = './node';
-		}else if(has('host-rhino')){
-			defId = './rhino';
-		}
+	if(has('host-browser')){
+		platformId = './xhr';
+	}else if(has('host-node')){
+		platformId = './node';
+	}else if(has('host-rhino')){
+		platformId = './rhino';
 	}
 
+	if(!defId){
+		defId = platformId;
+	}
+
+	exports.getPlatformDefaultId = function(){
+		return platformId;
+	};
+
 	exports.load = function(id, parentRequire, loaded, config){
-		require([defId], function(transport){
+		require([id == "platform" ? platformId : defId], function(transport){
 			loaded(transport);
 		});
 	};
