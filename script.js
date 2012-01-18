@@ -2,13 +2,12 @@ define([
 	'module',
 	'./watch',
 	'./util',
-	'./registry',
 	'dojo/on',
 	'dojo/dom',
 	'dojo/dom-construct',
 	'dojo/_base/sniff',
 	'dojo/_base/window'
-], function(module, watch, util, registry, on, dom, domConstruct, has, win){
+], function(module, watch, util, on, dom, domConstruct, has, win){
 	var mid = module.id.replace('/', '_').replace('.', '_').replace('-', '_'),
 		counter = 0,
 		loadEvent = has("ie") ? "readystatechange" : "load",
@@ -148,20 +147,6 @@ define([
 		return dfds.promise;
 	}
 	script.get = util.curry(script, 'GET');
-
-	script.register = function(matcher, first){
-		var m = util.createMatcher(matcher);
-
-		matcher = function(method, url){
-			if(method == 'GET'){
-				return m.apply(null, arguments);
-			}
-			return false;
-		};
-		matcher.request = script;
-
-		return registry.register(matcher, first);
-	};
 
 	return script;
 });

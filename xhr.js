@@ -1,4 +1,4 @@
-define(["./watch", "./registry", "./handlers", "./util", "dojo/_base/Deferred", "es5-shim"], function(watch, registry, handlers, util, Deferred){
+define(["./watch", "./handlers", "./util", "dojo/_base/Deferred", "es5-shim"], function(watch, handlers, util, Deferred){
 	function _validCheck(/*Deferred*/dfd, responseData){
 		return responseData.xhr.readyState; //boolean
 	}
@@ -131,14 +131,7 @@ define(["./watch", "./registry", "./handlers", "./util", "dojo/_base/Deferred", 
 	}
 
 	xhr.isDocumentOk = isDocumentOk;
-	xhr.get = util.curry(xhr, "GET");
-	xhr.post = util.curry(xhr, "POST");
-	xhr.put = util.curry(xhr, "PUT");
-	xhr.del = util.curry(xhr, "DELETE");
-
-	xhr.register = function(matcher, first){
-		return registry.register(util.createMatcher(matcher, xhr), first);
-	};
+	util.addCommonMethods(xhr);
 
 	return xhr;
 });
