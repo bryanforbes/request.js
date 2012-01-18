@@ -17,7 +17,7 @@ define([
 		deadScripts = [];
 
 	function jsonpCallback(json){
-		this.options.response = json;
+		this.responseData.response = json;
 	}
 
 	function attach(id, url, frameDoc){
@@ -41,40 +41,38 @@ define([
 		}
 	}
 
-	function _addDeadScript(options){
-		deadScripts.push({ id: options.id, frameDoc: options.frameDoc });
-		options.frameDoc = null;
+	function _addDeadScript(responseData){
+		deadScripts.push({ id: responseData.id, frameDoc: responseData.options.frameDoc });
+		responseData.options.frameDoc = null;
 	}
 
-	function _deferredCancel(dfd, options){
-		dfd.canceled = true;
-		if(options.canDelete){
-			_addDeadScript(options);
+	function _deferredCancel(dfd, responseData){
+		if(responseData.canDelete){
+			_addDeadScript(responseData);
 		}
 	}
 
-	function _deferOk(options){
-		if(options.canDelete){
-			_addDeadScript(options);
+	function _deferOk(responseData){
+		if(responseData.canDelete){
+			_addDeadScript(responseData);
 		}
 
-		return options;
+		return responseData;
 	}
 
-	function _deferError(error, options){
-		if(options.canDelete){
+	function _deferError(error, responseData){
+		if(responseData.canDelete){
 			if(error.dojoType == "timeout"){
 				//For timeouts, remove the script element immediately to
 				//avoid a response from it coming back later and causing trouble.
-				remove(options.id, options.frameDoc);
+				remove(responseData.id, responseData.options.frameDoc);
 			}else{
-				_addDeadScript(options);
+				_addDeadScript(responseData);
 			}
 		}
-		throw error;
 	}
 
-	function _validCheck(dfd, options){
+	function _validCheck(dfd, responseData){
 		//Do script cleanup here. We wait for one inflight pass
 		//to make sure we don't get any weird things by trying to remove a script
 		//tag that is part of the call chain (IE 6 has been known to
@@ -90,16 +88,16 @@ define([
 		return true;
 	}
 
-	function _ioCheck(dfd, options){
-		if(options.response || options.scriptLoaded){
+	function _ioCheck(dfd, responseData){
+		if(responseData.response || responseData.scriptLoaded){
 			return true;
 		}
 		return false;
 	}
 
-	function _resHandle(dfd, options){
-		if(_ioCheck(dfd, options)){
-			dfd.callback(options);
+	function _resHandle(dfd, responseData){
+		if(_ioCheck(dfd, responseData)){
+			dfd.callback(responseData);
 		}else{
 			dfd.errback(new Error("inconceivable request/script error"));
 		}
@@ -107,45 +105,49 @@ define([
 
 	function script(method, url, options){
 		options = util.mix({}, options);
+		var responseData = {
+			options: options
+		};
 
-		var dfds = watch.deferreds(options, _deferredCancel, _deferOk, _deferError),
+		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
 			dfd = dfds.deferred;
 
-		options.id = counter++;
-		options.scriptId = mid + options.id;
-		options.canDelete = false;
-		options.url = url;
+		util.mix(responseData, {
+			id: counter++,
+			canDelete: false,
+			url: url
+		});
+		responseData.scriptId = mid + responseData.id;
 
 		if(options.jsonp){
 			url += (~url.indexOf("?") ? "&" : "?") +
 				options.jsonp + "=" +
 				(options.frameDoc ? "parent." : "") +
-				mid + "_callbacks[" + options.id + "]._jsonpCallback";
+				mid + "_callbacks[" + responseData.id + "]._jsonpCallback";
 
-			options.canDelete = true;
-			options._jsonpCallback = jsonpCallback;
-			callbacks[options.id] = {
+			responseData.canDelete = true;
+			callbacks[responseData.id] = {
 				_jsonpCallback: jsonpCallback,
-				options: options
+				responseData: responseData
 			};
 		}
 
-		var node = attach(options.scriptId, url, options.frameDoc);
+		var node = attach(responseData.scriptId, url, responseData.frameDoc);
 
 		if(!options.jsonp){
 			var handle = on(node, loadEvent, function(evt){
 				if(evt.type == "load" || readyRegExp.test(node.readyState)){
 					handle.remove();
-					options.scriptLoaded = evt;
+					responseData.scriptLoaded = evt;
 				}
 			});
 		}
 
-		watch(dfd, options, _validCheck, _ioCheck, _resHandle);
+		watch(dfd, responseData, _validCheck, _ioCheck, _resHandle);
 
 		return dfds.promise;
 	}
-	script.get = script;
+	script.get = util.curry(script, 'GET');
 
 	script.register = function(matcher, first){
 		var m = util.createMatcher(matcher);
