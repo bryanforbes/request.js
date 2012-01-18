@@ -13,12 +13,13 @@ define([
 
 		for(var i = 0, tif; i < _inFlight.length && (tif = _inFlight[i]); i++){
 			var dfd = tif.dfd,
-				options = tif.options;
-			if(!dfd || dfd.canceled || !tif.validCheck(dfd, options)){
+				responseData = tif.responseData,
+				options = responseData.options;
+			if(!dfd || dfd.canceled || !tif.validCheck(dfd, responseData)){
 				_inFlight.splice(i--, 1);
-			}else if(tif.ioCheck(dfd, options)){
+			}else if(tif.ioCheck(dfd, responseData)){
 				_inFlight.splice(i--, 1);
-				tif.resHandle(dfd, options);
+				tif.resHandle(dfd, responseData);
 			}else if(options.startTime){
 				// did we timeout?
 				if(options.startTime + (options.timeout || 0) < now){
@@ -38,14 +39,14 @@ define([
 		}
 	}
 
-	function watch(dfd, options, validCheck, ioCheck, resHandle){
-		if(options.timeout){
-			options.startTime = +(new Date);
+	function watch(dfd, responseData, validCheck, ioCheck, resHandle){
+		if(responseData.options.timeout){
+			responseData.options.startTime = +(new Date);
 		}
 
 		_inFlight.push({
 			dfd: dfd,
-			options: options,
+			responseData: responseData,
 			validCheck: validCheck,
 			ioCheck: ioCheck,
 			resHandle: resHandle
@@ -54,21 +55,26 @@ define([
 			_inFlightIntvl = setInterval(watchInFlight, 50);
 		}
 
-		if(options.sync){
+		if(responseData.options.sync){
 			watchInFlight();
 		}
 	}
 
-	watch.deferreds = function deferreds(options, cancel, ok, err){
+	watch.deferreds = function deferreds(data, cancel, ok, err){
 		var def = new Deferred(function(dfd){
-				cancel(dfd, options);
+				dfd.canceled = true;
+				var err = cancel(dfd, data);
+				if(err){
+					return err;
+				}
 			}),
 			promise = def.then(
-				ok,
+				function(responseData){
+					return Object.freeze(ok(responseData));
+				},
 				function(error){
-					try{
-						err(error, options);
-					}catch(e){}
+					err(error, data);
+					throw error;
 				}
 			);
 
