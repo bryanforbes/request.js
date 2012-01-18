@@ -17,8 +17,17 @@
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request"], function(request){
+		require(["request", "request/handlers", "dojo/_base/json"], function(request, handlers, dojo){
+			handlers.register("json1x", function(responseData){
+				return dojo.fromJson(responseData.responseText || null);
+			});
+
 			request.get('data.json', { handleAs: 'json' }).then(function(responseData){
+				console.log(responseData);
+			}, function(err){
+				console.log(err);
+			});
+			request.get('data1x.json', { handleAs: 'json1x' }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
 				console.log(err);
