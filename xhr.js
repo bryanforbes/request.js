@@ -1,9 +1,9 @@
-define(["./watch", "./registry", "./util", "dojo/_base/Deferred", "es5-shim"], function(watch, registry, util, Deferred){
-	function _validCheck(/*Deferred*/dfd, options){
-		return options.xhr.readyState; //boolean
+define(["./watch", "./registry", "./handlers", "./util", "dojo/_base/Deferred", "es5-shim"], function(watch, registry, handlers, util, Deferred){
+	function _validCheck(/*Deferred*/dfd, responseData){
+		return responseData.xhr.readyState; //boolean
 	}
-	function _ioCheck(/*Deferred*/dfd, options){
-		return 4 == options.xhr.readyState; //boolean
+	function _ioCheck(/*Deferred*/dfd, responseData){
+		return 4 == responseData.xhr.readyState; //boolean
 	}
 	function isDocumentOk(xhr){
 		var stat = xhr.status || 0;
@@ -12,12 +12,12 @@ define(["./watch", "./registry", "./util", "dojo/_base/Deferred", "es5-shim"], f
 			stat == 1223 ||                // or, Internet Explorer mangled the status code
 			!stat;                         // or, we're Titanium/browser chrome/chrome extension requesting a local file
 	}
-	function _resHandle(/*Deferred*/dfd, options){
-		var _xhr = options.xhr;
+	function _resHandle(/*Deferred*/dfd, responseData){
+		var _xhr = responseData.xhr;
 		if(xhr.isDocumentOk(_xhr)){
-			dfd.callback(options);
+			dfd.callback(responseData);
 		}else{
-			var err = new Error("Unable to load " + options.url + " status:" + _xhr.status);
+			var err = new Error("Unable to load " + responseData.url + " status:" + _xhr.status);
 			err.status = _xhr.status;
 			err.responseText = _xhr.responseText;
 			err.xhr = _xhr;
@@ -25,39 +25,39 @@ define(["./watch", "./registry", "./util", "dojo/_base/Deferred", "es5-shim"], f
 		}
 	}
 
-	function _deferredCancel(dfd, options){
-		dfd.canceled = true;
-		var xhr = options.xhr;
+	function _deferredCancel(dfd, responseData){
+		var xhr = responseData.xhr;
 		var _at = typeof xhr.abort;
 		if(_at == "function" || _at == "object" || _at == "unknown"){
 			xhr.abort();
 		}
-		var err = options.error;
+		var err = responseData.error;
 		if(!err){
 			err = new Error("xhr cancelled");
 			err.dojoType="cancel";
 		}
 		return err;
 	}
-	function _deferOk(options){
-		options.response = options.xhr.responseText;
-		return options;
+	function _deferOk(responseData){
+		responseData.responseText = responseData.xhr.responseText;
+		responseData.status = responseData.xhr.status;
+		handlers(responseData);
+		return responseData;
 	}
-	function _deferError(error, options){
-		if(!options.failOk){
+	function _deferError(error, responseData){
+		if(!responseData.options.failOk){
 			console.error(error);
 		}
-		throw error;
 	}
 
 	var u;
 	function xhr(method, url, options){
 		options = util.mix({}, options);
+		var responseData = {
+			options: options
+		};
 
-		var dfd = new Deferred(function(dfd){
-			_deferredCancel(dfd, options);
-		});
-		var dfds = watch.deferreds(options, _deferredCancel, _deferOk, _deferError),
+		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
 			dfd = dfds.deferred,
 			_xhr = xhr._create();
 
@@ -96,20 +96,15 @@ define(["./watch", "./registry", "./util", "dojo/_base/Deferred", "es5-shim"], f
 			dfd.reject(e);
 		}
 
-		util.mix(options, {
-			method: method,
+		util.mix(responseData, {
+			xhr: _xhr,
 			url: url,
-			xhr: _xhr
+			method: method
 		});
-		watch(dfd, options, _validCheck, _ioCheck, _resHandle);
+		watch(dfd, responseData, _validCheck, _ioCheck, _resHandle);
 		_xhr = null;
 
-		return dfd.then(
-			_deferOk,
-			function(error){
-				return _deferError(error, options);
-			}
-		);
+		return dfds.promise;
 	}
 
 	xhr._create = function(){
