@@ -10,5 +10,9 @@ define(['dojo/json'], function(JSON){
 		responseData.response = handler ? handler(responseData) : responseData.responseText;
 	}
 
+	handle.register = function(name, handler){
+		handlers[name] = handler;
+	};
+
 	return handle;
 });
