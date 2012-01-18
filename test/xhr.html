@@ -17,8 +17,8 @@
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request", "request/script"], function(request, script){
-			request('GET', 'data.json', { handleAs: 'json' }).then(function(responseData){
+		require(["request"], function(request){
+			request.get('data.json', { handleAs: 'json' }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
 				console.log(err);

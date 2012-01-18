@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Script Test</title>
+	<title>Registry Test</title>
 
 	<script>
 		var dojoConfig = {
@@ -13,16 +13,20 @@
 				'request',
 				{ name: 'es5-shim', location: 'es5-shim', main: 'es5-shim' }
 			],
-			defaultTransport: 'request/script'
+			defaultTransport: 'request/registry'
 		};
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request"], function(request){
-			request.get('jsonp.php', { jsonp: 'callback' }).then(function(responseData){
+		require(["request", "request/script"], function(request, script){
+			request.register(/jsonp/, script);
+			request.get('data.json', { handleAs: 'json' }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
 				console.log(err);
+			});
+			request.get('jsonp.php', { jsonp: 'callback' }).then(function(responseData){
+				console.log(responseData);
 			});
 		});
 	</script>
