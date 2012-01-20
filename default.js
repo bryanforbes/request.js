@@ -1,4 +1,9 @@
-define(['exports', 'require', 'dojo/has', 'dojo/has!host-browser?es5-shim:'], function(exports, require, has){
+define([
+	'exports',
+	'require',
+	'./has',
+	'./has!request-es5?:es5-shim'
+], function(exports, require, has){
 	var defId = has('config-defaultTransport'),
 		platformId;
 
@@ -19,7 +24,7 @@ define(['exports', 'require', 'dojo/has', 'dojo/has!host-browser?es5-shim:'], fu
 	};
 
 	exports.load = function(id, parentRequire, loaded, config){
-		require([id == "platform" ? platformId : defId], function(transport){
+		require([id == 'platform' ? platformId : defId], function(transport){
 			loaded(transport);
 		});
 	};

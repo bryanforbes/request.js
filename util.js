@@ -1,4 +1,7 @@
-define(['exports', 'dojo/has!host-browser?es5-shim:'], function(exports){
+define([
+	'exports',
+	'./has!request-es5?:es5-shim'
+], function(exports){
 	exports.mix = function mix(target, source){
 		for(var name in source){
 			if(target[name] !== source[name]){
