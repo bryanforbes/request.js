@@ -1,7 +1,7 @@
 define([
 	"./util",
 	"dojo/_base/Deferred",
-	"dojo/has!dom-addeventlistener?:dojo/on"
+	"dojo/has!host-browser?dom-addeventlistener?:dojo/on:"
 ], function(util, Deferred, on){
 	// avoid setting a timer per request. It degrades performance on IE
 	// something fierece if we don't use unified loops.
@@ -24,9 +24,8 @@ define([
 				// did we timeout?
 				if(options.startTime + (options.timeout || 0) < now){
 					_inFlight.splice(i--, 1);
-					var err = new Error("timeout exceeded");
-					err.dojoType = "timeout";
-					dfd.errback(err);
+					responseData.error = new Error("timeout exceeded");
+					responseData.error.dojoType = "timeout";
 					//Cancel the request so the io module can do appropriate cleanup.
 					dfd.cancel();
 				}
@@ -63,7 +62,7 @@ define([
 	watch.deferreds = function deferreds(data, cancel, ok, err){
 		var def = new Deferred(function(dfd){
 				dfd.canceled = true;
-				var err = cancel(dfd, data);
+				err = cancel(dfd, data);
 				if(err){
 					return err;
 				}

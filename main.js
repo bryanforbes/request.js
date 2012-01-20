@@ -1,6 +1,5 @@
 define([
-	"./default!",
-	"es5-shim"
+	"./default!"
 ], function(defaultTransport){
 	return defaultTransport;
 });

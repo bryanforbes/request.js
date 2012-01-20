@@ -22,7 +22,7 @@
 				return dojo.fromJson(responseData.responseText || null);
 			});
 
-			request.get('data.json', { handleAs: 'json' }).then(function(responseData){
+			request.get('data.json', { handleAs: 'json', headers: { Range: "1-2" } }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
 				console.log(err);

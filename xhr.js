@@ -1,4 +1,4 @@
-define(["./watch", "./handlers", "./util", "dojo/_base/Deferred", "es5-shim"], function(watch, handlers, util, Deferred){
+define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watch, handlers, util, Deferred){
 	function _validCheck(/*Deferred*/dfd, responseData){
 		return responseData.xhr.readyState; //boolean
 	}
@@ -50,32 +50,40 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred", "es5-shim"], f
 		}
 	}
 
-	var u;
-	function xhr(method, url, options){
-		options = util.mix({}, options);
+	var undef,
+		defaultOptions = {
+			data: null,
+			sync: false,
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded'
+			}
+		};
+	function xhr(url, options){
 		var responseData = {
-			options: options
+			options: (options = util.deepCreate(defaultOptions, options))
 		};
 
 		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
 			dfd = dfds.deferred,
 			_xhr = xhr._create();
 
-		var data = options.data === u ? null : options.data,
-			sync = options.sync === u ? false : !!options.sync;
+		var data = options.data,
+			sync = !!options.sync,
+			method = options.method;
 
 		if(options.preventCache){
 			url += (~url.indexOf("?") ? "&" : "?") + "xhr.preventCache=" + (+(new Date));
 		}
 
 		// IE6 won't let you call apply() on the native function.
-		_xhr.open(method, url, sync, options.user || u, options.password || undefined);
+		_xhr.open(method, url, sync, options.user || undef, options.password || undef);
 
-		var contentType = "application/x-www-form-urlencoded",
-			headers = options.headers;
+		var headers = options.headers,
+			contentType;
 		if(headers){
 			for(var hdr in headers){
-				if(hrd.toLowerCase() == "content-type"){
+				if(hdr.toLowerCase() == "content-type"){
 					contentType = headers[hdr];
 				}else if(headers[hdr]){
 					_xhr.setRequestHeader(hdr, headers[hdr]);
@@ -83,7 +91,7 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred", "es5-shim"], f
 			}
 		}
 
-		if(contentType !== false){
+		if(contentType && contentType !== false){
 			_xhr.setRequestHeader("Content-Type", contentType);
 		}
 		if(!headers || !("X-Requested-With" in headers)){

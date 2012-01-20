@@ -5,7 +5,7 @@ define([
 ], function(require, fallbackTransport, util){
 	var registry = [];
 
-	function transport(method, url, options){
+	function transport(url, options){
 		var matchers = registry.slice(0),
 			i = 0,
 			matcher;

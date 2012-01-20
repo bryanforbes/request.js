@@ -1,29 +1,93 @@
-define(['require', './registry', 'dojo/_base/Deferred'], function(require, registry, Deferred){
+define([
+   'require',
+   'dojo/_base/Deferred',
+   './util',
+   './handlers'
+], function(require, Deferred, util, handlers){
 	var http = require.nodeRequire('http'),
-		URL = require.nodeRequire('url');
+		https = require.nodeRequire('https'),
+		URL = require.nodeRequire('url'),
+		undef;
 
-	function request(method, url, options){
+	var defaultOptions = {
+		method: 'GET',
+		data: null,
+		headers: {}
+	};
+	function request(url, options){
+		var responseData = {
+			url: url,
+			options: (options = util.deepCreate(defaultOptions, options))
+		};
+
 		var def = new Deferred(function(){
-			req.abort();
+			responseData.clientRequest.abort();
+			if(responseData.error){
+				return responseData.error;
+			}
+			var err = new Error("request cancelled");
+			err.dojoType="cancel";
+
+			return err;
 		});
 
 		url = URL.parse(url);
-		
-		var req = http.request({
-			hostname: url.hostname,
-			port: url.port,
-			path: url.path,
-			auth: url.auth
-		}, function(res){
-			def.resolve(res);
+
+		var reqOptions = responseData.requestOptions = {
+			host: url.hostname,
+			method: options.method,
+			port: url.port == undef ? 80 : url.port,
+			headers: options.headers
+		};
+		if(url.path){
+			reqOptions.path = url.path;
+		}
+		if(options.user || options.password){
+			reqOptions.auth = (options.user||"") + ":" + (options.password||"");
+		}
+		var req = responseData.clientRequest = (url.protocol == 'https:' ? https : http).request(reqOptions);
+
+		req.on('response', function(response){
+			responseData.clientResponse = response;
+			responseData.status = response.statusCode;
+
+			var body = [];
+			response.on('data', function(chunk){
+				def.progress(chunk.toString());
+				body.push(chunk);
+			});
+			response.on('end', function(){
+				if(timeout){
+					clearTimeout(timeout);
+				}
+				responseData.responseText = body.join('');
+				handlers(responseData);
+				def.resolve(responseData);
+			});
 		});
 
 		req.on('error', function(e){
 			def.reject(e);
 		});
 
+		if(options.data != undef){
+			req.write(options.data);
+		}
+
+		req.end();
+
+		if(options.timeout != undef){
+			var timeout = setTimeout(function(){
+				responseData.error = new Error("timeout exceeded");
+				responseData.error.dojoType = "timeout";
+				def.cancel();
+			}, options.timeout);
+		}
+
 		return def.promise;
 	}
+
+	util.addCommonMethods(request);
 
 	return request;
 });

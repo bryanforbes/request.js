@@ -1,4 +1,4 @@
-define(['exports', 'require', 'dojo/has'], function(exports, require, has){
+define(['exports', 'require', 'dojo/has', 'dojo/has!host-browser?es5-shim:'], function(exports, require, has){
 	var defId = has('config-defaultTransport'),
 		platformId;
 

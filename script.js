@@ -49,6 +49,12 @@ define([
 		if(responseData.canDelete){
 			_addDeadScript(responseData);
 		}
+		var err = responseData.error;
+		if(!err){
+			err = new Error("script cancelled");
+			err.dojoType="cancel";
+		}
+		return err;
 	}
 
 	function _deferOk(responseData){
@@ -102,10 +108,9 @@ define([
 		}
 	}
 
-	function script(method, url, options){
-		options = util.mix({}, options);
+	function script(url, options){
 		var responseData = {
-			options: options
+			options: (options = util.deepCopy({}, options))
 		};
 
 		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
@@ -146,7 +151,7 @@ define([
 
 		return dfds.promise;
 	}
-	script.get = util.curry(script, 'GET');
+	script.get = script;
 
 	return script;
 });
