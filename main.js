@@ -1,5 +1,5 @@
 define([
-	"./default!"
+	'./default!'
 ], function(defaultTransport){
 	return defaultTransport;
 });

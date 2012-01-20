@@ -25,8 +25,8 @@ define([
 			if(responseData.error){
 				return responseData.error;
 			}
-			var err = new Error("request cancelled");
-			err.dojoType="cancel";
+			var err = new Error('request cancelled');
+			err.dojoType='cancel';
 
 			return err;
 		});
@@ -43,7 +43,7 @@ define([
 			reqOptions.path = url.path;
 		}
 		if(options.user || options.password){
-			reqOptions.auth = (options.user||"") + ":" + (options.password||"");
+			reqOptions.auth = (options.user||'') + ':' + (options.password||'');
 		}
 		var req = responseData.clientRequest = (url.protocol == 'https:' ? https : http).request(reqOptions);
 
@@ -78,8 +78,8 @@ define([
 
 		if(options.timeout != undef){
 			var timeout = setTimeout(function(){
-				responseData.error = new Error("timeout exceeded");
-				responseData.error.dojoType = "timeout";
+				responseData.error = new Error('timeout exceeded');
+				responseData.error.dojoType = 'timeout';
 				def.cancel();
 			}, options.timeout);
 		}

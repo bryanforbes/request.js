@@ -1,4 +1,9 @@
-define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watch, handlers, util, Deferred){
+define([
+	'./watch',
+	'./handlers',
+	'./util',
+	'dojo/_base/Deferred'
+], function(watch, handlers, util, Deferred){
 	function _validCheck(/*Deferred*/dfd, responseData){
 		return responseData.xhr.readyState; //boolean
 	}
@@ -17,7 +22,7 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watc
 		if(xhr.isDocumentOk(_xhr)){
 			dfd.callback(responseData);
 		}else{
-			var err = new Error("Unable to load " + responseData.url + " status:" + _xhr.status);
+			var err = new Error('Unable to load ' + responseData.url + ' status:' + _xhr.status);
 			err.status = _xhr.status;
 			err.responseText = _xhr.responseText;
 			err.xhr = _xhr;
@@ -28,13 +33,13 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watc
 	function _deferredCancel(dfd, responseData){
 		var xhr = responseData.xhr;
 		var _at = typeof xhr.abort;
-		if(_at == "function" || _at == "object" || _at == "unknown"){
+		if(_at == 'function' || _at == 'object' || _at == 'unknown'){
 			xhr.abort();
 		}
 		var err = responseData.error;
 		if(!err){
-			err = new Error("xhr cancelled");
-			err.dojoType="cancel";
+			err = new Error('xhr cancelled');
+			err.dojoType='cancel';
 		}
 		return err;
 	}
@@ -73,7 +78,7 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watc
 			method = options.method;
 
 		if(options.preventCache){
-			url += (~url.indexOf("?") ? "&" : "?") + "xhr.preventCache=" + (+(new Date));
+			url += (~url.indexOf('?') ? '&' : '?') + 'xhr.preventCache=' + (+(new Date));
 		}
 
 		// IE6 won't let you call apply() on the native function.
@@ -83,7 +88,7 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watc
 			contentType;
 		if(headers){
 			for(var hdr in headers){
-				if(hdr.toLowerCase() == "content-type"){
+				if(hdr.toLowerCase() == 'content-type'){
 					contentType = headers[hdr];
 				}else if(headers[hdr]){
 					_xhr.setRequestHeader(hdr, headers[hdr]);
@@ -92,10 +97,10 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watc
 		}
 
 		if(contentType && contentType !== false){
-			_xhr.setRequestHeader("Content-Type", contentType);
+			_xhr.setRequestHeader('Content-Type', contentType);
 		}
-		if(!headers || !("X-Requested-With" in headers)){
-			_xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+		if(!headers || !('X-Requested-With' in headers)){
+			_xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		}
 
 		try{
@@ -116,23 +121,23 @@ define(["./watch", "./handlers", "./util", "dojo/_base/Deferred"], function(watc
 	}
 
 	xhr._create = function(){
-		throw new Error("XMLHTTP not available");
+		throw new Error('XMLHTTP not available');
 	};
-	if(typeof XMLHttpRequest != "undefined"){
+	if(typeof XMLHttpRequest != 'undefined'){
 		xhr._create = function(){
 			return new XMLHttpRequest();
 		};
-	}else if(typeof ActiveXObject != "undefined"){
+	}else if(typeof ActiveXObject != 'undefined'){
 		try{
-			new ActiveXObject("Msxml2.XMLHTTP");
+			new ActiveXObject('Msxml2.XMLHTTP');
 			xhr._create = function(){
-				return new ActiveXObject("Msxml2.XMLHTTP");
+				return new ActiveXObject('Msxml2.XMLHTTP');
 			};
 		}catch(e){
 			try{
-				new ActiveXObject("Microsoft.XMLHTTP");
+				new ActiveXObject('Microsoft.XMLHTTP');
 				xhr._create = function(){
-					return new ActiveXObject("Microsoft.XMLHTTP");
+					return new ActiveXObject('Microsoft.XMLHTTP');
 				};
 			}catch(e){}
 		}

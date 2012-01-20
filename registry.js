@@ -21,7 +21,7 @@ define([
 
 	transport.register = function(m, transport, first){
 		var matcher = util.createMatcher(m, transport);
-		registry[(first ? "unshift" : "push")](matcher);
+		registry[(first ? 'unshift' : 'push')](matcher);
 
 		return {
 			remove: function(){

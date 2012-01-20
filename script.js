@@ -10,9 +10,9 @@ define([
 ], function(module, watch, util, on, dom, domConstruct, has, win){
 	var mid = module.id.replace('/', '_').replace('.', '_').replace('-', '_'),
 		counter = 0,
-		loadEvent = has("ie") ? "readystatechange" : "load",
+		loadEvent = has('ie') ? 'readystatechange' : 'load',
 		readyRegExp = /complete|loaded/,
-		callbacks = this[mid + "_callbacks"] = {},
+		callbacks = this[mid + '_callbacks'] = {},
 		deadScripts = [];
 
 	function jsonpCallback(json){
@@ -21,15 +21,15 @@ define([
 
 	function attach(id, url, frameDoc){
 		var doc = (frameDoc || win.doc),
-			element = doc.createElement("script");
+			element = doc.createElement('script');
 
-		element.type = "text/javascript";
+		element.type = 'text/javascript';
 		element.src = url;
 		element.id = id;
 		element.async = true;
-		element.charset = "utf-8";
+		element.charset = 'utf-8';
 
-		return doc.getElementsByTagName("head")[0].appendChild(element);
+		return doc.getElementsByTagName('head')[0].appendChild(element);
 	}
 
 	function remove(id, frameDoc){
@@ -51,8 +51,8 @@ define([
 		}
 		var err = responseData.error;
 		if(!err){
-			err = new Error("script cancelled");
-			err.dojoType="cancel";
+			err = new Error('script cancelled');
+			err.dojoType='cancel';
 		}
 		return err;
 	}
@@ -67,7 +67,7 @@ define([
 
 	function _deferError(error, responseData){
 		if(responseData.canDelete){
-			if(error.dojoType == "timeout"){
+			if(error.dojoType == 'timeout'){
 				//For timeouts, remove the script element immediately to
 				//avoid a response from it coming back later and causing trouble.
 				remove(responseData.id, responseData.options.frameDoc);
@@ -104,7 +104,7 @@ define([
 		if(_ioCheck(dfd, responseData)){
 			dfd.callback(responseData);
 		}else{
-			dfd.errback(new Error("inconceivable request/script error"));
+			dfd.errback(new Error('inconceivable request/script error'));
 		}
 	}
 
@@ -124,10 +124,10 @@ define([
 		responseData.scriptId = mid + responseData.id;
 
 		if(options.jsonp){
-			url += (~url.indexOf("?") ? "&" : "?") +
-				options.jsonp + "=" +
-				(options.frameDoc ? "parent." : "") +
-				mid + "_callbacks[" + responseData.id + "]._jsonpCallback";
+			url += (~url.indexOf('?') ? '&' : '?') +
+				options.jsonp + '=' +
+				(options.frameDoc ? 'parent.' : '') +
+				mid + '_callbacks[' + responseData.id + ']._jsonpCallback';
 
 			responseData.canDelete = true;
 			callbacks[responseData.id] = {
@@ -140,7 +140,7 @@ define([
 
 		if(!options.jsonp){
 			var handle = on(node, loadEvent, function(evt){
-				if(evt.type == "load" || readyRegExp.test(node.readyState)){
+				if(evt.type == 'load' || readyRegExp.test(node.readyState)){
 					handle.remove();
 					responseData.scriptLoaded = evt;
 				}
