@@ -17,17 +17,8 @@
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request", "request/handlers", "dojo/_base/json"], function(request, handlers, dojo){
-			handlers.register("json1x", function(responseData){
-				return dojo.fromJson(responseData.responseText || null);
-			});
-
+		require(["request"], function(request){
 			request.get('data.json', { handleAs: 'json', headers: { Range: "1-2" } }).then(function(responseData){
-				console.log(responseData);
-			}, function(err){
-				console.log(err);
-			});
-			request.get('data1x.json', { handleAs: 'json1x' }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
 				console.log(err);
