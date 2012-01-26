@@ -2,12 +2,14 @@ define([
 	'module',
 	'./watch',
 	'./util',
+	'dojo/_base/array',
+	'dojo/_base/lang',
 	'dojo/on',
 	'dojo/dom',
 	'dojo/dom-construct',
 	'dojo/_base/sniff',
 	'dojo/_base/window'
-], function(module, watch, util, on, dom, domConstruct, has, win){
+], function(module, watch, util, array, lang, on, dom, domConstruct, has, win){
 	var mid = module.id.replace('/', '_').replace('.', '_').replace('-', '_'),
 		counter = 0,
 		loadEvent = has('ie') ? 'readystatechange' : 'load',
@@ -83,7 +85,7 @@ define([
 		//tag that is part of the call chain (IE 6 has been known to
 		//crash in that case).
 		if(deadScripts && deadScripts.length){
-			deadScripts.forEach(function(script){
+			array.forEach(deadScripts, function(script){
 				remove(script.id, script.frameDoc);
 				script.frameDoc = null;
 			});
@@ -119,7 +121,7 @@ define([
 		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
 			dfd = dfds.deferred;
 
-		util.mix(responseData, {
+		lang.mixin(responseData, {
 			id: counter++,
 			canDelete: false
 		});

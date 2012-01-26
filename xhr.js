@@ -2,8 +2,9 @@ define([
 	'./watch',
 	'./handlers',
 	'./util',
+	'dojo/_base/lang',
 	'dojo/_base/Deferred'
-], function(watch, handlers, util, Deferred){
+], function(watch, handlers, util, lang, Deferred){
 	function _validCheck(/*Deferred*/dfd, responseData){
 		return responseData.xhr.readyState; //boolean
 	}
@@ -109,7 +110,7 @@ define([
 			dfd.reject(e);
 		}
 
-		util.mix(responseData, {
+		lang.mixin(responseData, {
 			xhr: _xhr
 		});
 		watch(dfd, responseData, _validCheck, _ioCheck, _resHandle);

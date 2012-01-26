@@ -1,12 +1,13 @@
 define([
 	'dojo/json',
+	'dojo/_base/array',
 	'./has'
-], function(JSON, has){
+], function(JSON, array, has){
 	var handleXML = function(responseData){
 		return responseData.xhr.responseXML;
 	};
 	if(has('request-activex')){
-		var dp = [6, 4, 3, 2].map(function(n){
+		var dp = array.map([6, 4, 3, 2], function(n){
 			return 'MSXML' + n + '.DOMDocument';
 		});
 		dp.unshift('Microsoft.XMLDOM');
@@ -16,7 +17,7 @@ define([
 
 			if(!result || !result.documentElement){
 				var text = responseData.responseText;
-				dp.some(function(p){
+				array.some(dp, function(p){
 					try{
 						var dom = new ActiveXObject(p);
 						dom.async = false;

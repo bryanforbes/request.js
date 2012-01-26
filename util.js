@@ -1,17 +1,9 @@
 define([
 	'exports',
 	'dojo/io-query',
-	'./has!request-es5?:es5-shim'
-], function(exports, ioQuery){
-	exports.mix = function mix(target, source){
-		for(var name in source){
-			if(target[name] !== source[name]){
-				target[name] = source[name];
-			}
-		}
-		return target;
-	};
-
+	'dojo/_base/array',
+	'dojo/_base/lang'
+], function(exports, ioQuery, array, lang){
 	exports.deepCopy = function deepCopy(target, source){
 		for(var name in source){
 			var tval = target[name],
@@ -29,7 +21,7 @@ define([
 
 	exports.deepCreate = function deepCreate(source, properties){
 		properties = properties || {};
-		var target = Object.create(source),
+		var target = lang.delegate(source),
 			name, value;
 
 		for(name in source){
@@ -42,19 +34,10 @@ define([
 		return exports.deepCopy(target, properties);
 	};
 
-	var ap = Array.prototype,
-		slice = ap.slice;
-	exports.curry = function curry(func /*, args*/){
-		var args = slice.call(arguments, 1);
-		return function(){
-			return func.apply(this, args.concat(slice.call(arguments, 0)));
-		};
-	};
-
 	exports.addCommonMethods = function(provider){
-		['GET', 'POST', 'PUT', 'DELETE'].forEach(function(method){
+		array.forEach(['GET', 'POST', 'PUT', 'DELETE'], function(method){
 			provider[(method == 'DELETE' ? 'DEL' : method).toLowerCase()] = function(url, options){
-				options = Object.create(options||{});
+				options = lang.delegate(options||{});
 				options.method = method;
 				return provider(url, options);
 			};

@@ -1,8 +1,7 @@
 define([
 	'exports',
 	'require',
-	'./has',
-	'./has!request-es5?:es5-shim'
+	'./has'
 ], function(exports, require, has){
 	var defId = has('config-requestProvider'),
 		platformId;

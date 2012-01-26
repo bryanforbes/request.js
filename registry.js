@@ -1,8 +1,9 @@
 define([
 	'require',
+	'dojo/_base/array',
 	'./default!platform',
 	'./util'
-], function(require, fallbackProvider, util){
+], function(require, array, fallbackProvider, util){
 	var registry = [];
 
 	function request(url, options){
@@ -26,7 +27,7 @@ define([
 		return {
 			remove: function(){
 				var idx;
-				if(~(idx = registry.indexOf(matcher))){
+				if(~(idx = array.indexOf(registry, matcher))){
 					registry.splice(idx, 1);
 				}
 			}

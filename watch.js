@@ -1,12 +1,14 @@
 define([
 	'./util',
 	'dojo/_base/Deferred',
+	'dojo/_base/array',
 	'./has!request-no-addeventlistener?dojo/on:'
-], function(util, Deferred, on){
+], function(util, Deferred, array, on){
 	// avoid setting a timer per request. It degrades performance on IE
 	// something fierece if we don't use unified loops.
 	var _inFlightIntvl = null,
-		_inFlight = [];
+		_inFlight = [],
+		freeze = Object.freeze || function(obj){ return obj; };
 
 	function watchInFlight(){
 		var now = +(new Date);
@@ -69,7 +71,7 @@ define([
 			}),
 			promise = def.then(
 				function(responseData){
-					return Object.freeze(ok(responseData));
+					return freeze(ok(responseData));
 				},
 				function(error){
 					err(error, data);
@@ -85,7 +87,7 @@ define([
 
 	watch.cancelAll = function cancelAll(){
 		try{
-			_inFlight.forEach(function(i){
+			array.forEach(_inFlight, function(i){
 				try{
 					i.dfd.cancel();
 				}catch(e){}
