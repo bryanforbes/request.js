@@ -11,13 +11,16 @@ define([
 
 	var defaultOptions = {
 		method: 'GET',
+		query: null,
 		data: null,
 		headers: {}
 	};
 	function request(url, options){
+		var args = util.parseArgs(url, util.deepCreate(defaultOptions, options));
+
 		var responseData = {
-			url: url,
-			options: (options = util.deepCreate(defaultOptions, options))
+			url: url = args[0],
+			options: options = args[1]
 		};
 
 		var def = new Deferred(function(){

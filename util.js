@@ -1,7 +1,8 @@
 define([
 	'exports',
+	'dojo/io-query',
 	'./has!request-es5?:es5-shim'
-], function(exports){
+], function(exports, ioQuery){
 	exports.mix = function mix(target, source){
 		for(var name in source){
 			if(target[name] !== source[name]){
@@ -50,17 +51,17 @@ define([
 		};
 	};
 
-	exports.addCommonMethods = function(transport){
+	exports.addCommonMethods = function(provider){
 		['GET', 'POST', 'PUT', 'DELETE'].forEach(function(method){
-			transport[(method == 'DELETE' ? 'DEL' : method).toLowerCase()] = function(url, options){
+			provider[(method == 'DELETE' ? 'DEL' : method).toLowerCase()] = function(url, options){
 				options = Object.create(options||{});
 				options.method = method;
-				return transport(url, options);
+				return provider(url, options);
 			};
 		});
 	};
 
-	exports.createMatcher = function(m, transport){
+	exports.createMatcher = function(m, provider){
 		var matcher;
 		if(m.test){
 			// RegExp
@@ -75,10 +76,38 @@ define([
 			};
 		}
 
-		if(transport){
-			matcher.request = transport;
+		if(provider){
+			matcher.request = provider;
 		}
 
 		return matcher;
+	};
+
+	exports.parseArgs = function(url, options){
+		var data = options.data,
+			query = options.query;
+		
+		if(data){
+			if(typeof data == 'object'){
+				options.data = ioQuery.objectToQuery(data);
+			}
+		}
+
+		if(query){
+			if(typeof query == 'object'){
+				query = ioQuery.objectToQuery(query);
+			}
+			if(options.preventCache){
+				query += (query ? '&' : '') + 'request.preventCache=' + +(new Date);
+			}
+		}else if(options.preventCache){
+			query = 'request.preventCache=' + +(new Date);
+		}
+
+		if(query){
+			url += (~url.indexOf('?') ? '&' : '?') + query;
+		}
+
+		return [url, options];
 	};
 });

@@ -4,7 +4,7 @@ define([
 	'./has',
 	'./has!request-es5?:es5-shim'
 ], function(exports, require, has){
-	var defId = has('config-defaultTransport'),
+	var defId = has('config-requestProvider'),
 		platformId;
 
 	if(has('host-browser')){
@@ -24,8 +24,8 @@ define([
 	};
 
 	exports.load = function(id, parentRequire, loaded, config){
-		require([id == 'platform' ? platformId : defId], function(transport){
-			loaded(transport);
+		require([id == 'platform' ? platformId : defId], function(provider){
+			loaded(provider);
 		});
 	};
 });

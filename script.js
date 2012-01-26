@@ -109,8 +109,11 @@ define([
 	}
 
 	function script(url, options){
+		var args = util.parseArgs(url, util.deepCopy({}, options));
+
 		var responseData = {
-			options: (options = util.deepCopy({}, options))
+			url: url = args[0],
+			options: options = args[1]
 		};
 
 		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
@@ -118,8 +121,7 @@ define([
 
 		util.mix(responseData, {
 			id: counter++,
-			canDelete: false,
-			url: url
+			canDelete: false
 		});
 		responseData.scriptId = mid + responseData.id;
 

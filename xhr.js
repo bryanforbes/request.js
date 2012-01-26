@@ -58,6 +58,7 @@ define([
 	var undef,
 		defaultOptions = {
 			data: null,
+			query: null,
 			sync: false,
 			method: 'GET',
 			headers: {
@@ -65,8 +66,11 @@ define([
 			}
 		};
 	function xhr(url, options){
+		var args = util.parseArgs(url, util.deepCreate(defaultOptions, options));
+
 		var responseData = {
-			options: (options = util.deepCreate(defaultOptions, options))
+			url: url = args[0],
+			options: options = args[1]
 		};
 
 		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
@@ -76,10 +80,6 @@ define([
 		var data = options.data,
 			sync = !!options.sync,
 			method = options.method;
-
-		if(options.preventCache){
-			url += (~url.indexOf('?') ? '&' : '?') + 'xhr.preventCache=' + (+(new Date));
-		}
 
 		// IE6 won't let you call apply() on the native function.
 		_xhr.open(method, url, sync, options.user || undef, options.password || undef);
@@ -110,9 +110,7 @@ define([
 		}
 
 		util.mix(responseData, {
-			xhr: _xhr,
-			url: url,
-			method: method
+			xhr: _xhr
 		});
 		watch(dfd, responseData, _validCheck, _ioCheck, _resHandle);
 		_xhr = null;

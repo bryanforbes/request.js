@@ -2,10 +2,10 @@ define([
 	'require',
 	'./default!platform',
 	'./util'
-], function(require, fallbackTransport, util){
+], function(require, fallbackProvider, util){
 	var registry = [];
 
-	function transport(url, options){
+	function request(url, options){
 		var matchers = registry.slice(0),
 			i = 0,
 			matcher;
@@ -16,11 +16,11 @@ define([
 			}
 		}
 
-		return fallbackTransport.apply(null, arguments);
+		return fallbackProvider.apply(null, arguments);
 	}
 
-	transport.register = function(m, transport, first){
-		var matcher = util.createMatcher(m, transport);
+	request.register = function(m, provider, first){
+		var matcher = util.createMatcher(m, provider);
 		registry[(first ? 'unshift' : 'push')](matcher);
 
 		return {
@@ -33,19 +33,19 @@ define([
 		};
 	};
 
-	transport.load = function(id, parentRequire, loaded, config){
+	request.load = function(id, parentRequire, loaded, config){
 		if(id){
-			// if there's an id, load and set the fallback transport
+			// if there's an id, load and set the fallback provider
 			require([id], function(fallback){
-				fallbackTransport = fallback;
-				loaded(transport);
+				fallbackProvider = fallback;
+				loaded(request);
 			});
 		}else{
-			loaded(transport);
+			loaded(request);
 		}
 	};
 
-	util.addCommonMethods(transport);
+	util.addCommonMethods(request);
 
-	return transport;
+	return request;
 });
