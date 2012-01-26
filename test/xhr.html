@@ -12,14 +12,40 @@
 				'dojo',
 				'request',
 				{ name: 'es5-shim', location: 'es5-shim', main: 'es5-shim' }
+			],
+			aliases: [
+				[/^dojo\/request\/(.*)$/g, function(mid, end){
+					return 'request/' + end;
+				}],
+				['dojo/request', 'request/main']
 			]
 		};
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request"], function(request){
-			request.get('data.json', { handleAs: 'json', headers: { Range: "1-2" } }).then(function(responseData){
+		require(["dojo/request"], function(request){
+			request.get('data.json', {
+				handleAs: 'json',
+				headers: { Range: '1-2' },
+				query: {
+					foo: 'bar'
+				}
+			}).then(function(responseData){
 				console.log(responseData);
+			}, function(err){
+				console.log(err);
+			});
+			request.post('post.php', {
+				headers: { Range: '1-2' },
+				query: {
+					bar: 'baz'
+				},
+				preventCache: true,
+				data: {
+					baz: 'foo'
+				}
+			}).then(function(responseData){
+				console.log(responseData.responseText);
 			}, function(err){
 				console.log(err);
 			});

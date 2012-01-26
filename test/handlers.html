@@ -12,12 +12,18 @@
 				'dojo',
 				'request',
 				{ name: 'es5-shim', location: 'es5-shim', main: 'es5-shim' }
+			],
+			aliases: [
+				[/^dojo\/request\/(.*)$/g, function(mid, end){
+					return 'request/' + end;
+				}],
+				['dojo/request', 'request/main']
 			]
 		};
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request", "request/handlers", "dojo/_base/json"], function(request, handlers, dojo){
+		require(["dojo/request", "dojo/request/handlers", "dojo/_base/json"], function(request, handlers, dojo){
 			handlers.register("json1x", function(responseData){
 				return dojo.fromJson(responseData.responseText || null);
 			});

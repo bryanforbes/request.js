@@ -4,31 +4,31 @@
 
 Use the platform fallback (XHR in browsers):
 
-	require(['request'], function(request){
+	require(['dojo/request'], function(request){
 		request('data.json', { handleAs: 'json' }).then(function(responseData){
 			console.log(responseData.response);
 		});
 	});
 
-Use a specific transport directly:
+Use a specific provider directly:
 
-	require(['request/script'], function(script){
+	require(['dojo/request/script'], function(script){
 		script('jsonp.php').then(function(responseData){
 			console.log(responseData.response);
 		});
 	});
 
 
-Configure `request` to use a specific transport by default:
+Configure `request` to use a specific provider by default:
 
 	<script>
 		var dojoConfig = {
-			defaultTransport: 'request/script'
+			requestProvider: 'dojo/request/script'
 		};
 	</script>
 	<script src="path/to/dojo.js"></script>
 	<script>
-		require(['request'], function(request){
+		require(['dojo/request'], function(request){
 			request('jsonp.php').then(function(responseData){
 				console.log(responseData.response);
 			});
@@ -41,12 +41,12 @@ Use the registry with the platform default as a fallback:
 
 	<script>
 		var dojoConfig = {
-			defaultTransport: 'request/registry'
+			requestProvider: 'dojo/request/registry'
 		};
 	</script>
 	<script src="path/to/dojo.js"></script>
 	<script>
-		require(['request', 'request/script'], function(request, script){
+		require(['dojo/request', 'dojo/request/script'], function(request, script){
 			request.register(/jsonp/, script);
 
 			request('data.json', { handleAs: 'json' }).then(function(responseData){
@@ -59,16 +59,16 @@ Use the registry with the platform default as a fallback:
 		});
 	</script>
 
-Use the registry with `request/script` as a fallback:
+Use the registry with `dojo/request/script` as a fallback:
 
 	<script>
 		var dojoConfig = {
-			defaultTransport: 'request/registry!request/script'
+			requestProvider: 'dojo/request/registry!dojo/request/script'
 		};
 	</script>
 	<script src="path/to/dojo.js"></script>
 	<script>
-		require(['request', 'request/xhr'], function(request, xhr){
+		require(['dojo/request', 'dojo/request/xhr'], function(request, xhr){
 			request.register(/\.json$/, xhr);
 
 			request('data.json', { handleAs: 'json' }).then(function(responseData){

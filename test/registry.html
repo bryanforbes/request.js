@@ -13,12 +13,18 @@
 				'request',
 				{ name: 'es5-shim', location: 'es5-shim', main: 'es5-shim' }
 			],
-			defaultTransport: 'request/registry'
+			aliases: [
+				[/^dojo\/request\/(.*)$/g, function(mid, end){
+					return 'request/' + end;
+				}],
+				['dojo/request', 'request/main']
+			],
+			requestProvider: 'dojo/request/registry'
 		};
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request", "request/script"], function(request, script){
+		require(["dojo/request", "dojo/request/script"], function(request, script){
 			request.register(/jsonp/, script);
 			request.get('data.json', { handleAs: 'json' }).then(function(responseData){
 				console.log(responseData);

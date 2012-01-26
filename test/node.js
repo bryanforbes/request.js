@@ -1,4 +1,11 @@
-require(['require', 'request/main'], function(require, request){
+require({
+	aliases: [
+		[/^dojo\/request\/(.*)$/g, function(mid, end){
+			return 'request/' + end;
+		}],
+		['dojo/request', 'request/main']
+	]
+}, ['require', 'dojo/request'], function(require, request){
 	var http = require.nodeRequire('http'),
 		timeout;
 

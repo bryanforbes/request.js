@@ -13,12 +13,18 @@
 				'request',
 				{ name: 'es5-shim', location: 'es5-shim', main: 'es5-shim' }
 			],
-			defaultTransport: 'request/script'
+			aliases: [
+				[/^dojo\/request\/(.*)$/g, function(mid, end){
+					return 'request/' + end;
+				}],
+				['dojo/request', 'request/main']
+			],
+			requestProvider: 'dojo/request/script'
 		};
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["request"], function(request){
+		require(["dojo/request"], function(request){
 			request.get('jsonp.php', { jsonp: 'callback' }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
