@@ -118,8 +118,7 @@ define([
 			options: options = args[1]
 		};
 
-		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
-			dfd = dfds.deferred;
+		var dfd = util.deferred(responseData, _deferredCancel, _deferOk, _deferError);
 
 		lang.mixin(responseData, {
 			id: counter++,
@@ -153,7 +152,7 @@ define([
 
 		watch(dfd, responseData, _validCheck, _ioCheck, _resHandle);
 
-		return dfds.promise;
+		return dfd.promise;
 	}
 	script.get = script;
 

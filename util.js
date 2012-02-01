@@ -1,9 +1,10 @@
 define([
 	'exports',
+	'dojo/_base/Deferred',
 	'dojo/io-query',
 	'dojo/_base/array',
 	'dojo/_base/lang'
-], function(exports, ioQuery, array, lang){
+], function(exports, Deferred, ioQuery, array, lang){
 	exports.deepCopy = function deepCopy(target, source){
 		for(var name in source){
 			var tval = target[name],
@@ -34,7 +35,38 @@ define([
 		return exports.deepCopy(target, properties);
 	};
 
-	exports.addCommonMethods = function(provider){
+	var freeze = Object.freeze || function(obj){ return obj; };
+	exports.deferred = function deferred(data, cancel, ok, err){
+		var def = new Deferred(function(dfd){
+			dfd.canceled = true;
+			var err = cancel(dfd, data);
+			if(err){
+				return err;
+			}
+		});
+		var okHandler = ok ?
+			function(responseData){
+				return freeze(ok(responseData));
+			} :
+			function(responseData){
+				return freeze(responseData);
+			};
+		var errHandler = err ?
+			function(error){
+				err(error, data);
+				throw error;
+			} :
+			function(error){
+				throw error;
+			};
+
+		def.promise = def.then(okHandler, errHandler);
+		def.then = def.promise.then;
+
+		return def;
+	};
+
+	exports.addCommonMethods = function addCommonMethods(provider){
 		array.forEach(['GET', 'POST', 'PUT', 'DELETE'], function(method){
 			provider[(method == 'DELETE' ? 'DEL' : method).toLowerCase()] = function(url, options){
 				options = lang.delegate(options||{});
@@ -44,7 +76,7 @@ define([
 		});
 	};
 
-	exports.createMatcher = function(m, provider){
+	exports.createMatcher = function createMatcher(m, provider){
 		var matcher;
 		if(m.test){
 			// RegExp
@@ -66,7 +98,7 @@ define([
 		return matcher;
 	};
 
-	exports.parseArgs = function(url, options){
+	exports.parseArgs = function parseArgs(url, options){
 		var data = options.data,
 			query = options.query;
 		

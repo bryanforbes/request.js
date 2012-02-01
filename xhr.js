@@ -74,8 +74,7 @@ define([
 			options: options = args[1]
 		};
 
-		var dfds = watch.deferreds(responseData, _deferredCancel, _deferOk, _deferError),
-			dfd = dfds.deferred,
+		var dfd = util.deferred(responseData, _deferredCancel, _deferOk, _deferError),
 			_xhr = xhr._create();
 
 		var data = options.data,
@@ -116,7 +115,7 @@ define([
 		watch(dfd, responseData, _validCheck, _ioCheck, _resHandle);
 		_xhr = null;
 
-		return dfds.promise;
+		return dfd.promise;
 	}
 
 	xhr._create = function(){

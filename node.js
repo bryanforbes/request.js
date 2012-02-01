@@ -12,7 +12,7 @@ define([
 	var defaultOptions = {
 		method: 'GET',
 		query: null,
-		data: null,
+		data: undef,
 		headers: {}
 	};
 	function request(url, options){
@@ -23,16 +23,18 @@ define([
 			options: options = args[1]
 		};
 
-		var def = new Deferred(function(){
-			responseData.clientRequest.abort();
-			if(responseData.error){
-				return responseData.error;
+		var def = util.deferred(
+			responseData,
+			function(dfd, data){
+				data.clientRequest.abort();
+				var err = data.error;
+				if(!err){
+					err = new Error('request cancelled');
+					err.dojoType = 'cancel';
+				}
+				return err;
 			}
-			var err = new Error('request cancelled');
-			err.dojoType='cancel';
-
-			return err;
-		});
+		);
 
 		url = URL.parse(url);
 
@@ -73,7 +75,7 @@ define([
 			def.reject(e);
 		});
 
-		if(options.data != undef){
+		if(options.data !== undef){
 			req.write(options.data);
 		}
 
