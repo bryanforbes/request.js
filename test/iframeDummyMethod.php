@@ -32,6 +32,8 @@ function outputType($type, $q, $p){
 		echo json_encode($result);
 	}else if($type == 'javascript'){
 		echo "window.iframeTestingFunction = function(){ return 42; };";
+	}else if(array_key_exists('text', $q)){
+		echo $q['text'];
 	}else{
 		echo "iframe succeeded";
 	}
@@ -50,6 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}else{
 		$post = fix_raw_data($post);
 	}
+}
+
+if((!empty($query) && array_key_exists('delay', $query))){
+	sleep((int)$query['delay']);
+}else if((!empty($post) && array_key_exists('delay', $post))){
+	sleep((int)$post['delay']);
 }
 
 header("HTTP/1.1 200 OK");

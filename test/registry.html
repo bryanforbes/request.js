@@ -10,6 +10,7 @@
 			async: true,
 			packages: [
 				'dojo',
+				{ name: 'doh', location: 'util/doh' },
 				'request'
 			],
 			aliases: [
@@ -23,8 +24,28 @@
 	</script>
 	<script src="../../dojo/dojo.js"></script>
 	<script>
-		require(["dojo/request", "dojo/request/script"], function(request, script){
-			request.register(/jsonp/, script);
+		require({
+			requestProvider: 'dojo/request/registry'
+		},[
+			"doh",
+			"dojo/request",
+			"dojo/request/registry",
+			"dojo/request/script",
+			"dojo/domReady!"
+		], function(doh, request, registry, script){
+			doh.register("dojo/request/registry", [
+				function requestEqualsRegistry(t){
+					t.is(registry, request, "request should be the registry function");
+				},
+				{
+					name: "",
+					runTest: function(t){
+					}
+				}
+			]);
+
+			doh.run();
+			/*request.register(/jsonp/, script);
 			request.get('data.json', { handleAs: 'json' }).then(function(responseData){
 				console.log(responseData);
 			}, function(err){
@@ -32,7 +53,7 @@
 			});
 			request.get('jsonp.php', { jsonp: 'callback' }).then(function(responseData){
 				console.log(responseData);
-			});
+			});*/
 		});
 	</script>
 </head>

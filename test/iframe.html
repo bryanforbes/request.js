@@ -32,8 +32,8 @@
 						var td = iframe.get("iframeDummyMethod.php?type=text", {
 							preventCache: true
 						});
-						td.then(d.getTestCallback(function(responseData){
-							t.is("iframe succeeded", responseData.response);
+						td.then(d.getTestCallback(function(response){
+							t.is("iframe succeeded", response.data);
 						}));
 						return d;
 					},
@@ -49,8 +49,8 @@
 							},
 							handleAs: "json"
 						});
-						td.then(d.getTestCallback(function(responseData){
-							t.is("blue", responseData.response.post.color);
+						td.then(d.getTestCallback(function(response){
+							t.is("blue", response.data.post.color);
 						}));
 						return d;
 					},
@@ -61,7 +61,7 @@
 							preventCache: true,
 							handleAs: "javascript"
 						});
-						td.then(d.getTestCallback(function(responseData){
+						td.then(d.getTestCallback(function(response){
 							t.is(42, window.iframeTestingFunction());
 						}));
 						return d;
@@ -73,9 +73,9 @@
 							preventCache: true,
 							handleAs: "html"
 						});
-						td.then(d.getTestCallback(function(responseData){
+						td.then(d.getTestCallback(function(response){
 							t.is("SUCCESSFUL HTML response",
-								responseData.response.getElementsByTagName("h1")[0].innerHTML);
+								response.data.getElementsByTagName("h1")[0].innerHTML);
 						}));
 						return d;
 					},
@@ -86,8 +86,8 @@
 							preventCache: true,
 							handleAs: "xml"
 						});
-						td.then(d.getTestCallback(function(responseData){
-							t.is(4, responseData.response.documentElement.getElementsByTagName("child").length);
+						td.then(d.getTestCallback(function(response){
+							t.is(4, response.data.documentElement.getElementsByTagName("child").length);
 						}));
 						return d;
 					},
@@ -99,10 +99,47 @@
 							data: {"tag": ["value1","value2"]},
 							handleAs: "json"
 						});
-						td.then(d.getTestCallback(function(responseData){
-							t.is("value2", responseData.response.post.tag);
+						td.then(d.getTestCallback(function(response){
+							t.is("value2", response.data.post.tag);
 						}));
 						return d;
+					},
+					{
+						name: "iframeQueue",
+						timeout: 10000,
+						runTest: function(t){
+							var d = new doh.Deferred();
+
+							iframe.get("iframeDummyMethod.php",{
+								query: {
+									type: "text",
+									delay: 2,
+									text: "one"
+								}
+							}).then(d.getTestErrback(function(data){
+								t.is("one", data.text);
+							}));
+							iframe.get("iframeDummyMethod.php",{
+								query: {
+									type: "text",
+									text: "two"
+								}
+							}).then(d.getTestErrback(function(data){
+								t.is("two", data.text);
+							}));
+							iframe.get("iframeDummyMethod.php",{
+								query: {
+									type: "text",
+									text: "three"
+								}
+							}).then(d.getTestCallback(function(data){
+								t.is("three", data.text);
+							}));
+
+							t.is(3, iframe._dfdQueue.length);
+
+							return d;
+						}
 					}
 				]);
 				doh.run();

@@ -29,6 +29,9 @@ function fix_raw_data($data){
 $query = null;
 if (!empty($_SERVER['QUERY_STRING'])) {
 	$query = fix_raw_data($_SERVER['QUERY_STRING']);
+	if(!empty($query) && array_key_exists('delay', $query)){
+		sleep((int)$query['delay']);
+	}
 }
 
 $post = null;

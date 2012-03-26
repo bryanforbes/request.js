@@ -30,7 +30,7 @@
 						//t.is("undefined", typeof(scriptLoad));
 						var d = new doh.Deferred();
 						var td = script.get("scriptLoad.js")
-							.then(d.getTestCallback(function(responseData){
+							.then(d.getTestCallback(function(response){
 								t.isNot("undefined", typeof scriptLoad);
 								t.is("loaded", scriptLoad);
 							}), function(error){
@@ -42,7 +42,7 @@
 						var d = new doh.Deferred();
 						script.get("scriptSimple.js", {
 							checkString: "myTasks"
-						}).then(d.getTestCallback(function(responseData){
+						}).then(d.getTestCallback(function(response){
 							t.isNot("undefined", typeof myTasks);
 							t.is("Do dishes.", myTasks[1]);
 						}), function(error){
@@ -55,8 +55,8 @@
 						script.get("scriptJsonp.js", {
 							query: { foo: "bar" },
 							jsonp: "callback"
-							}).then(d.getTestCallback(function(responseData){
-								t.is("mammal", responseData.response.animalType);
+							}).then(d.getTestCallback(function(response){
+								t.is("mammal", response.data.animalType);
 							}), function(error){
 								d.errback(error);
 							});
@@ -68,8 +68,9 @@
 							query: { Foo: 'Bar' },
 							timeout: 500,
 							handleAs: "json",
+							jsonp: "callback",
 							preventCache: true
-						}).then(function(responseData){
+						}).then(function(response){
 							d.errback(false);
 						}, d.getTestCallback(function(error){
 							t.is("timeout", error.dojoType);

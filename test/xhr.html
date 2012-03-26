@@ -33,9 +33,9 @@
 							var d = new doh.Deferred();
 							var td = xhr.get("xhr.html", {
 								preventCache: true
-							}).then(function(responseData){
-								t.is(4, responseData.xhr.readyState);
-								return responseData;
+							}).then(function(response){
+								t.is(4, response.xhr.readyState);
+								return response;
 							});
 							t.t(!!(td.then && td.cancel));
 							td.then(lang.hitch(d, "callback"));
@@ -44,11 +44,11 @@
 						function xhrGet404(t){
 							var d = new doh.Deferred();
 							var td = xhr.get("xhr_blarg.html").then(
-								function(responseData){
+								function(response){
 									d.errback(false);
 								},
 								d.getTestCallback(function(error){
-									t.is(404, error.responseData.status);
+									t.is(404, error.response.status);
 									return error;
 								})
 							);
@@ -63,11 +63,11 @@
 									xyzzy: 3
 								},
 								handleAs: "json"
-							}).then(d.getTestCallback(function(responseData){
+							}).then(d.getTestCallback(function(response){
 								t.is("xhrDummyMethod.php?color=blue&foo=bar&foo=baz&thud=thonk&xyzzy=3",
-									responseData.url);
+									response.url);
 
-								var query = responseData.response.query;
+								var query = response.data.query;
 
 								t.t(!!(query.color && query.foo && query.foo.length && query.thud && query.xyzzy));
 								t.is("blue", query.color);
@@ -80,19 +80,19 @@
 						function xhrPost(t){
 							var d = new doh.Deferred();
 
-							var callback = d.getTestCallback(function(responseData){
-								if(responseData.responseData){
-									responseData = responseData.responseData;
+							var callback = d.getTestCallback(function(response){
+								if(response.response){
+									response = response.response;
 								}
 
-								t.t(xhr.isDocumentOk(responseData.xhr) || responseData.status == 405);
+								t.t(xhr.isDocumentOk(response.xhr) || response.status == 405);
 							});
 							var td = xhr.post("xhrDummyMethod.php", {
 								data: { color: "blue"},
 								handleAs: "json"
-							}).then(d.getTestCallback(function(responseData){
-								t.t(!!responseData.response);
-								var post = responseData.response.post;
+							}).then(d.getTestCallback(function(response){
+								t.t(!!response.data);
+								var post = response.data.post;
 
 								t.t(!!(post && post.color));
 								t.is("blue", post.color);
@@ -112,11 +112,11 @@
 								},
 								data: { color: "blue" },
 								handleAs: "json"
-							}).then(d.getTestCallback(function(responseData){
-								t.t(!!responseData.response);
+							}).then(d.getTestCallback(function(response){
+								t.t(!!response.data);
 
-								var query = responseData.response.query,
-									post = responseData.response.post;
+								var query = response.data.query,
+									post = response.data.post;
 
 								t.t(!!(query && query.foo && query.foo.length && query.thud && query.xyzzy));
 								t.t(!!(post && post.color));
@@ -135,10 +135,10 @@
 							var td = xhr.post("xhrDummyMethod.php", {
 								data: "foo=bar&color=blue&height=average",
 								handleAs: "json"
-							}).then(d.getTestCallback(function(responseData){
-								t.t(!!responseData.response);
+							}).then(d.getTestCallback(function(response){
+								t.t(!!response.data);
 
-								var post = responseData.response.post;
+								var post = response.data.post;
 
 								t.t(!!(post && post.foo && post.color && post.height));
 								t.is("bar", post.foo);
@@ -157,10 +157,10 @@
 								query: { foo: "bar" },
 								data: { color: "blue"},
 								handleAs: "json"
-							}).then(d.getTestCallback(function(responseData){
-								t.t(!!responseData.response);
+							}).then(d.getTestCallback(function(response){
+								t.t(!!response.data);
 
-								var put = responseData.response.put;
+								var put = response.data.put;
 
 								t.t(!!(put && put.color));
 								t.is("blue", put.color);
@@ -175,9 +175,9 @@
 							var td = xhr.del("xhrDummyMethod.php", {
 								preventCache: true,
 								handleAs: "json"
-							}).then(d.getTestCallback(function(responseData){
-								t.t(!!responseData.response);
-								t.is("DELETE", responseData.response.method);
+							}).then(d.getTestCallback(function(response){
+								t.t(!!response.data);
+								t.is("DELETE", response.data.method);
 							}), function(error){
 								d.errback(error);
 							});
@@ -187,7 +187,7 @@
 						function xhrCancel(t){
 							var d = new doh.Deferred();
 							xhr.post("xhrDummyMethod.php")
-								.then(function(responseData){
+								.then(function(response){
 									d.errback(false);
 								}, d.getTestCallback(function(error){
 									t.t(error instanceof Error);
