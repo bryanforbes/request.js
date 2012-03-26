@@ -11,7 +11,7 @@ define([
 	'dojo/dom-construct',
 	'dojo/_base/window'
 ], function(module, require, watch, util, handlers, lang, query, has, dom, domConstruct, win){
-	var mid = module.id.replace(/[\/\.-]/g, '_'),
+	var mid = module.id.replace(/[\/\.\-]/g, '_'),
 		onload = mid + "_onload",
 		global = this,
 		queue = [],
@@ -25,13 +25,13 @@ define([
 				return;
 			}
 
-			var responseData = data[1],
-				options = responseData.options,
+			var response = data[1],
+				options = response.options,
 				formNode = dom.byId(options.form);
 
 			if(formNode){
 				// remove all the hidden content inputs
-				var toClean = responseData._contentToClean;
+				var toClean = response._contentToClean;
 				for(var i=0; i<toClean.length; i++){
 					var key = toClean[i];
 					//Need to cycle over all nodes since we may have added
@@ -47,14 +47,14 @@ define([
 				}
 
 				// restore original action + target
-				responseData._originalAction && formNode.setAttribute("action", responseData._originalAction);
-				if(responseData._originalTarget){
-					formNode.setAttribute("target", responseData._originalTarget);
-					formNode.target = responseData._originalTarget;
+				response._originalAction && formNode.setAttribute("action", response._originalAction);
+				if(response._originalTarget){
+					formNode.setAttribute("target", response._originalTarget);
+					formNode.target = response._originalTarget;
 				}
 			}
 
-			responseData._finished = true;
+			response._finished = true;
 		};
 	}
 
@@ -120,12 +120,14 @@ define([
 
 	function fireNextRequest(){
 		// summary: Internal method used to fire the next request in the queue.
+		var dfd;
 		try{
 			if(current || !queue.length){
 				return;
 			}
+			var data;
 			do{
-				var data = current = queue.shift();
+				data = current = queue.shift();
 			}while(data && data[0].canceled && queue.length);
 
 			if(!data || data[0].canceled){
@@ -133,11 +135,16 @@ define([
 				return;
 			}
 
-			var dfd = data[0],
-				responseData = data[1],
-				options = responseData.options,
-				c2c = responseData._contentToClean = [],
-				formNode = dom.byId(options.form);
+			dfd = data[0];
+			var response = data[1],
+				options = response.options,
+				c2c = response._contentToClean = [],
+				formNode = dom.byId(options.form),
+				notify;
+
+			try{
+				notify = require('./notify');
+			}catch(e){}
 
 			data = options.data || null;
 
@@ -175,12 +182,12 @@ define([
 					methodNode = formNode.getAttributeNode("method"),
 					targetNode = formNode.getAttributeNode("target");
 
-				if(responseData.url){
-					responseData._originalAction = actionNode ? actionNode.value : null;
+				if(response.url){
+					response._originalAction = actionNode ? actionNode.value : null;
 					if(actionNode){
-						actionNode.value = responseData.url;
+						actionNode.value = response.url;
 					}else{
-						formNode.setAttribute("action", responseData.url);
+						formNode.setAttribute("action", response.url);
 					}
 				}
 				if(methodNode){
@@ -189,18 +196,22 @@ define([
 					formNode.setAttribute("method", options.method);
 				}
 
-				responseData._originalTarget = targetNode ? targetNode.value : null;
+				response._originalTarget = targetNode ? targetNode.value : null;
 				if(targetNode){
 					targetNode.value = iframe._iframeName;
 				}else{
 					formNode.setAttribute("target", iframe._iframeName);
 				}
 				formNode.target = iframe._iframeName;
+
+				notify && notify.send(response);
 				formNode.submit();
 			}else{
 				// otherwise we post a GET string by changing URL location for the
 				// iframe
-				iframe.setSrc(iframe._frame, responseData.url, true);
+
+				notify && notify.send(response);
+				iframe.setSrc(iframe._frame, response.url, true);
 			}
 		}catch(e){
 			dfd.reject(e);
@@ -213,7 +224,7 @@ define([
 	function iframe(url, options){
 		var args = util.parseArgs(url, util.deepCreate(defaultOptions, options), true);
 
-		var responseData = {
+		var response = {
 			url: url = args[0],
 			options: options = args[1],
 			_callNext: function(){
@@ -234,15 +245,14 @@ define([
 		}
 
 		var dfd = util.deferred(
-			responseData,
-			function(dfd, responseData){
+			response,
+			function(dfd, response){
 				// summary: canceller for deferred
-				responseData._callNext();
 			},
-			function(responseData){
+			function(response){
 				// summary: okHandler function for deferred
 				try{
-					var options = responseData.options,
+					var options = response.options,
 						doc = iframe.doc(iframe._frame),
 						handleAs = options.handleAs;
 
@@ -253,52 +263,52 @@ define([
 								query('a', doc.documentElement).orphan();
 								var xmlText = doc.documentElement.innerText;
 								xmlText = xmlText.replace(/>\s+</g, '><');
-								responseData.text = lang.trim(xmlText);
+								response.text = lang.trim(xmlText);
 							}else{
-								responseData.response = doc;
+								response.data = doc;
 							}
 						}else{
 							// "json" and "javascript" and "text"
-							responseData.text = doc.getElementsByTagName('textarea')[0].value; // text
+							response.text = doc.getElementsByTagName('textarea')[0].value; // text
 						}
-						handlers(responseData);
+						handlers(response);
 					}else{
-						responseData.response = doc;
+						response.data = doc;
 					}
 
-					return responseData;
+					return response;
 				}catch(e){
 					throw e;
 				}
 			},
-			function(error, responseData){
+			function(error, response){
 				// error handler
-				responseData.error = error;
+				response.error = error;
 			},
-			function(responseData){
+			function(response){
 				// finally
-				responseData._callNext();
+				response._callNext();
 			}
 		);
 
-		queue.push([dfd, responseData]);
+		queue.push([dfd, response]);
 		iframe._fireNextRequest();
 
 		watch(
 			dfd,
-			responseData,
-			function(dfd, responseData){
+			response,
+			function(dfd, response){
 				// validCheck
-				return !responseData.error;
+				return !response.error;
 			},
-			function(dfd, responseData){
+			function(dfd, response){
 				// ioCheck
-				return !!responseData._finished;
+				return !!response._finished;
 			},
-			function(dfd, responseData){
+			function(dfd, response){
 				// resHandle
-				if(responseData._finished){
-					dfd.resolve(responseData);
+				if(response._finished){
+					dfd.resolve(response);
 				}else{
 					dfd.reject(new Error("Invalid dojo/request/iframe request state"));
 				}
@@ -307,6 +317,11 @@ define([
 
 		return dfd.promise;
 	}
+
+	try{
+		require("doh");
+		iframe._dfdQueue = queue;
+	}catch(e){}
 
 	iframe._iframeName = mid + "_IoIframe";
 	iframe.create = create;

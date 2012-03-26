@@ -9,28 +9,38 @@ define([
 		_inFlight = [];
 
 	function watchInFlight(){
+		//summary:
+		//		internal method that checks each inflight XMLHttpRequest to see
+		//		if it has completed or if the timeout situation applies.
+
 		var now = +(new Date);
 
-		for(var i = 0, tif; i < _inFlight.length && (tif = _inFlight[i]); i++){
-			var dfd = tif.dfd,
-				responseData = tif.responseData,
-				options = responseData.options;
-			if(!dfd || dfd.canceled || !tif.validCheck(dfd, responseData)){
+		// we need manual loop because we often modify _inFlight (and therefore 'i') while iterating
+		for(var i = 0, tif, dfd; i < _inFlight.length && (tif = _inFlight[i]); i++){
+			var response = tif.response,
+				options = response.options;
+			dfd = tif.dfd;
+			if(!dfd || dfd.canceled || !tif.validCheck(dfd, response)){
 				_inFlight.splice(i--, 1);
-			}else if(tif.ioCheck(dfd, responseData)){
+				watch._onAction && watch._onAction();
+			}else if(tif.ioCheck(dfd, response)){
 				_inFlight.splice(i--, 1);
-				tif.resHandle(dfd, responseData);
+				tif.resHandle(dfd, response);
+				watch._onAction && watch._onAction();
 			}else if(options.startTime){
 				// did we timeout?
 				if(options.startTime + (options.timeout || 0) < now){
 					_inFlight.splice(i--, 1);
-					responseData.error = new Error('timeout exceeded');
-					responseData.error.dojoType = 'timeout';
+					response.error = new Error('timeout exceeded');
+					response.error.dojoType = 'timeout';
 					//Cancel the request so the io module can do appropriate cleanup.
 					dfd.cancel();
+					watch._onAction && watch._onAction();
 				}
 			}
 		}
+
+		watch._onInFlight && watch._onInFlight(dfd);
 
 		if(!_inFlight.length){
 			clearInterval(_inFlightIntvl);
@@ -38,14 +48,14 @@ define([
 		}
 	}
 
-	function watch(dfd, responseData, validCheck, ioCheck, resHandle){
-		if(responseData.options.timeout){
-			responseData.options.startTime = +(new Date);
+	function watch(dfd, response, validCheck, ioCheck, resHandle){
+		if(response.options.timeout){
+			response.options.startTime = +(new Date);
 		}
 
 		_inFlight.push({
 			dfd: dfd,
-			responseData: responseData,
+			response: response,
 			validCheck: validCheck,
 			ioCheck: ioCheck,
 			resHandle: resHandle
@@ -54,7 +64,12 @@ define([
 			_inFlightIntvl = setInterval(watchInFlight, 50);
 		}
 
-		if(responseData.options.sync){
+		// handle sync requests
+		//A weakness: async calls in flight
+		//could have their handlers called as part of the
+		//_watchInFlight call, before the sync's callbacks
+		// are called.
+		if(response.options.sync){
 			watchInFlight();
 		}
 	}
@@ -70,7 +85,8 @@ define([
 	};
 
 	if(on && document.attachEvent){
-		// IE needs to clean up
+		// Automatically call cancel all io calls on unload in IE
+		// http://bugs.dojotoolkit.org/ticket/2357
 		on(window, 'unload', function(){
 			watch.cancelAll();
 		});

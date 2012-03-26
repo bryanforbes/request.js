@@ -13,11 +13,11 @@ define([
 		});
 		dp.unshift('Microsoft.XMLDOM');
 
-		handleXML = function(responseData){
-			var result = responseData.response;
+		handleXML = function(response){
+			var result = response.data;
 
 			if(!result || !result.documentElement){
-				var text = responseData.text;
+				var text = response.text;
 				array.some(dp, function(p){
 					try{
 						var dom = new ActiveXObject(p);
@@ -34,21 +34,21 @@ define([
 	}
 
 	var handlers = {
-		'javascript': function(responseData){
-			return kernel.eval(responseData.text || '');
+		'javascript': function(response){
+			return kernel.eval(response.text || '');
 		},
-		'json': function(responseData){
-			return JSON.parse(responseData.text || null);
+		'json': function(response){
+			return JSON.parse(response.text || null);
 		},
 		'xml': handleXML
 	};
 
-	function handle(responseData){
-		var handler = handlers[responseData.options.handleAs];
+	function handle(response){
+		var handler = handlers[response.options.handleAs];
 
-		responseData.response = handler ? handler(responseData) : (responseData.response || responseData.text);
+		response.data = handler ? handler(response) : (response.data || response.text);
 
-		return responseData;
+		return response;
 	}
 
 	handle.register = function(name, handler){

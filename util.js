@@ -1,10 +1,11 @@
 define([
 	'exports',
+	'require',
 	'dojo/_base/Deferred',
 	'dojo/io-query',
 	'dojo/_base/array',
 	'dojo/_base/lang'
-], function(exports, Deferred, ioQuery, array, lang){
+], function(exports, require, Deferred, ioQuery, array, lang){
 	exports.deepCopy = function deepCopy(target, source){
 		for(var name in source){
 			var tval = target[name],
@@ -36,46 +37,60 @@ define([
 	};
 
 	var freeze = Object.freeze || function(obj){ return obj; };
-	exports.deferred = function deferred(data, cancel, ok, err, fnlly){
+	exports.deferred = function deferred(response, cancel, ok, err, fnlly){
 		var def = new Deferred(function(dfd){
 			dfd.canceled = true;
-			cancel(dfd, data);
+			cancel && cancel(dfd, response);
 
-			var err = data.error;
+			var err = response.error;
 			if(!err){
 				err = new Error('request cancelled');
-				err.responseData = data;
+				err.response = response;
 				err.dojoType='cancel';
 			}
 			return err;
 		});
 		var okHandler = ok ?
-			function(responseData){
-				return freeze(ok(responseData));
+			function(response){
+				return freeze(ok(response));
 			} :
-			function(responseData){
-				return freeze(responseData);
+			function(response){
+				return freeze(response);
 			};
 		var errHandler = err ?
 			function(error){
-				error.responseData = data;
-				err(error, data);
+				error.response = response;
+				err(error, response);
 				throw error;
 			} :
 			function(error){
-				error.responseData = data;
+				error.response = response;
 				throw error;
 			};
 
 		var promise = def.then(okHandler, errHandler);
 
-		if(fnlly){
-			def.then(
-				function(responseData){
-					fnlly(responseData);
+		try{
+			var notify = require('./notify');
+			promise.then(
+				function(response){
+					notify.load(response);
+					return response;
 				},
 				function(error){
-					fnlly(data, error);
+					notify.error(error);
+					return error;
+				}
+			);
+		}catch(e){}
+
+		if(fnlly){
+			def.then(
+				function(response){
+					fnlly(response);
+				},
+				function(error){
+					fnlly(response, error);
 					throw error;
 				}
 			);
@@ -112,10 +127,10 @@ define([
 				query = ioQuery.objectToQuery(query);
 			}
 			if(options.preventCache){
-				query += (query ? '&' : '') + 'request.preventCache=' + +(new Date);
+				query += (query ? '&' : '') + 'request.preventCache=' + (+(new Date));
 			}
 		}else if(options.preventCache){
-			query = 'request.preventCache=' + +(new Date);
+			query = 'request.preventCache=' + (+(new Date));
 		}
 
 		if(url && query){
