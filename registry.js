@@ -11,7 +11,7 @@ define([
 			i = 0,
 			matcher;
 
-		for(; matcher=matchers[i]; i++){
+		while(matcher=matchers[i++]){
 			if(matcher.apply(null, arguments)){
 				return matcher.request.apply(null, arguments);
 			}
