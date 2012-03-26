@@ -1,7 +1,7 @@
 define([
 	'exports',
 	'require',
-	'./has'
+	'dojo/has'
 ], function(exports, require, has){
 	var defId = has('config-requestProvider'),
 		platformId;

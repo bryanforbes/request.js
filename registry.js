@@ -20,8 +20,32 @@ define([
 		return fallbackProvider.apply(null, arguments);
 	}
 
+	function createMatcher(match, provider){
+		var matcher;
+		if(match.test){
+			// RegExp
+			matcher = function(url){
+				return match.test(url);
+			};
+		}else if(match.apply && match.call){
+			matcher = function(){
+				return match.apply(null, arguments);
+			};
+		}else{
+			matcher = function(url){
+				return url === match;
+			};
+		}
+
+		if(provider){
+			matcher.request = provider;
+		}
+
+		return matcher;
+	}
+
 	request.register = function(m, provider, first){
-		var matcher = util.createMatcher(m, provider);
+		var matcher = createMatcher(m, provider);
 		registry[(first ? 'unshift' : 'push')](matcher);
 
 		return {

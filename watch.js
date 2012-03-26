@@ -1,7 +1,7 @@
 define([
 	'./util',
 	'dojo/_base/array',
-	'./has!request-no-addeventlistener?dojo/on:'
+	'dojo/has!host-browser?dom-addeventlistener?:dojo/on:'
 ], function(util, array, on){
 	// avoid setting a timer per request. It degrades performance on IE
 	// something fierece if we don't use unified loops.

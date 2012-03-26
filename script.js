@@ -10,12 +10,14 @@ define([
 	'dojo/_base/sniff',
 	'dojo/_base/window'
 ], function(module, watch, util, array, lang, on, dom, domConstruct, has, win){
-	var mid = module.id.replace('/', '_').replace('.', '_').replace('-', '_'),
+	var mid = module.id.replace(/[\/\.-]/g, '_'),
 		counter = 0,
 		loadEvent = has('ie') ? 'readystatechange' : 'load',
 		readyRegExp = /complete|loaded/,
 		callbacks = this[mid + '_callbacks'] = {},
 		deadScripts = [];
+	
+		console.log(mid);
 
 	function jsonpCallback(json){
 		this.responseData.response = json;
@@ -51,12 +53,6 @@ define([
 		if(responseData.canDelete){
 			_addDeadScript(responseData);
 		}
-		var err = responseData.error;
-		if(!err){
-			err = new Error('script cancelled');
-			err.dojoType='cancel';
-		}
-		return err;
 	}
 
 	function _deferOk(responseData){
@@ -96,10 +92,13 @@ define([
 	}
 
 	function _ioCheck(dfd, responseData){
-		if(responseData.response || responseData.scriptLoaded){
+		var checkString = responseData.options.checkString;
+		if(responseData.response || (responseData.scriptLoaded && !checkString)){
 			return true;
 		}
-		return false;
+
+		//Check for finished "checkString" case.
+		return checkString && eval("typeof(" + checkString + ") != 'undefined'");
 	}
 
 	function _resHandle(dfd, responseData){
@@ -141,7 +140,7 @@ define([
 
 		var node = attach(responseData.scriptId, url, responseData.frameDoc);
 
-		if(!options.jsonp){
+		if(!options.jsonp && !options.checkString){
 			var handle = on(node, loadEvent, function(evt){
 				if(evt.type == 'load' || readyRegExp.test(node.readyState)){
 					handle.remove();

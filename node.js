@@ -1,6 +1,6 @@
 define([
    'require',
-   'dojo/_base/Deferred',
+   '../_base/Deferred',
    './util',
    './handlers'
 ], function(require, Deferred, util, handlers){
@@ -65,7 +65,7 @@ define([
 				if(timeout){
 					clearTimeout(timeout);
 				}
-				responseData.responseText = body.join('');
+				responseData.text = body.join('');
 				handlers(responseData);
 				def.resolve(responseData);
 			});

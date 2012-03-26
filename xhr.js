@@ -3,8 +3,9 @@ define([
 	'./handlers',
 	'./util',
 	'dojo/_base/lang',
-	'dojo/_base/Deferred'
-], function(watch, handlers, util, lang, Deferred){
+	'dojo/_base/Deferred',
+	'dojo/has'
+], function(watch, handlers, util, lang, Deferred, has){
 	function _validCheck(/*Deferred*/dfd, responseData){
 		return responseData.xhr.readyState; //boolean
 	}
@@ -24,9 +25,12 @@ define([
 			dfd.callback(responseData);
 		}else{
 			var err = new Error('Unable to load ' + responseData.url + ' status:' + _xhr.status);
-			err.status = _xhr.status;
-			err.responseText = _xhr.responseText;
-			err.xhr = _xhr;
+			responseData.status = _xhr.status;
+			if(responseData.options.handleAs == "xml"){
+				responseData.response = _xhr.responseXML;
+			}else{
+				responseData.text = _xhr.responseText;
+			}
 			dfd.reject(err);
 		}
 	}
@@ -37,15 +41,14 @@ define([
 		if(_at == 'function' || _at == 'object' || _at == 'unknown'){
 			xhr.abort();
 		}
-		var err = responseData.error;
-		if(!err){
-			err = new Error('xhr cancelled');
-			err.dojoType='cancel';
-		}
-		return err;
 	}
 	function _deferOk(responseData){
-		responseData.responseText = responseData.xhr.responseText;
+		var _xhr = responseData.xhr;
+		if(responseData.options.handleAs == "xml"){
+			responseData.response = _xhr.responseXML;
+		}else{
+			responseData.text = _xhr.responseText;
+		}
 		responseData.status = responseData.xhr.status;
 		handlers(responseData);
 		return responseData;
@@ -121,11 +124,11 @@ define([
 	xhr._create = function(){
 		throw new Error('XMLHTTP not available');
 	};
-	if(typeof XMLHttpRequest != 'undefined'){
+	if(has('native-xhr')){
 		xhr._create = function(){
 			return new XMLHttpRequest();
 		};
-	}else if(typeof ActiveXObject != 'undefined'){
+	}else if(has('activex')){
 		try{
 			new ActiveXObject('Msxml2.XMLHTTP');
 			xhr._create = function(){

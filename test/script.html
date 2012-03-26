@@ -1,37 +1,87 @@
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>Script Test</title>
-
-	<script>
-		var dojoConfig = {
-			baseUrl: '../..',
-			async: true,
-			packages: [
-				'dojo',
-				'request'
-			],
-			aliases: [
-				[/^dojo\/request\/(.*)$/g, function(mid, end){
-					return 'request/' + end;
-				}],
-				['dojo/request', 'request/main']
-			],
-			requestProvider: 'dojo/request/script'
-		};
-	</script>
-	<script src="../../dojo/dojo.js"></script>
-	<script>
-		require(["dojo/request"], function(request){
-			request.get('jsonp.php', { jsonp: 'callback' }).then(function(responseData){
-				console.log(responseData);
-			}, function(err){
-				console.log(err);
+<html>
+	<head>
+		<title>dojo/request/script</title>
+		<style type="text/css">
+			@import "../../dojo/resources/dojo.css";
+		</style>
+		<script>
+			var dojoConfig = {
+				baseUrl: '../..',
+				async: true,
+				packages: [
+					'dojo',
+					{ name: 'doh', location: 'util/doh' },
+					'request'
+				],
+				aliases: [
+					[/^dojo\/request\/(.*)$/g, function(mid, end){
+						return 'request/' + end;
+					}],
+					['dojo/request', 'request/main']
+				]
+			};
+		</script>
+		<script type="text/javascript" src="../../dojo/dojo.js"></script>
+		<script type="text/javascript">
+			var request, fr;
+			require(["dojo/request/script", "doh", "dojo/request/iframe", "dojo/_base/window", "dojo/domReady!"], function(script, doh, iframe, win){
+				doh.register("t", [
+					function ioScriptLoad(t){
+						//t.is("undefined", typeof(scriptLoad));
+						var d = new doh.Deferred();
+						var td = script.get("scriptLoad.js")
+							.then(d.getTestCallback(function(responseData){
+								t.isNot("undefined", typeof scriptLoad);
+								t.is("loaded", scriptLoad);
+							}), function(error){
+								d.errback(error);
+							});
+						return d;
+					},
+					function ioScriptSimple(t){
+						var d = new doh.Deferred();
+						script.get("scriptSimple.js", {
+							checkString: "myTasks"
+						}).then(d.getTestCallback(function(responseData){
+							t.isNot("undefined", typeof myTasks);
+							t.is("Do dishes.", myTasks[1]);
+						}), function(error){
+							d.errback(error);
+						});
+						return d;
+					},
+					function ioScriptJsonp(t){
+						var d = new doh.Deferred();
+						script.get("scriptJsonp.js", {
+							query: { foo: "bar" },
+							jsonp: "callback"
+							}).then(d.getTestCallback(function(responseData){
+								t.is("mammal", responseData.response.animalType);
+							}), function(error){
+								d.errback(error);
+							});
+						return d;							
+					},
+					function ioScriptJsonpTimeout(t){
+						var d = new doh.Deferred();
+						script.get("../../dojo/tests/_base/timeout.php", {
+							query: { Foo: 'Bar' },
+							timeout: 500,
+							handleAs: "json",
+							preventCache: true
+						}).then(function(responseData){
+							d.errback(false);
+						}, d.getTestCallback(function(error){
+							t.is("timeout", error.dojoType);
+						}));
+						return d;
+					}
+				]);
+				doh.run();
 			});
-		});
-	</script>
-</head>
-<body>
-</body>
+		</script>
+	</head>
+	<body>
+		<h1>dojo/request/script test</h1>
+	</body>
 </html>

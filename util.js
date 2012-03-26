@@ -36,13 +36,18 @@ define([
 	};
 
 	var freeze = Object.freeze || function(obj){ return obj; };
-	exports.deferred = function deferred(data, cancel, ok, err){
+	exports.deferred = function deferred(data, cancel, ok, err, fnlly){
 		var def = new Deferred(function(dfd){
 			dfd.canceled = true;
-			var err = cancel(dfd, data);
-			if(err){
-				return err;
+			cancel(dfd, data);
+
+			var err = data.error;
+			if(!err){
+				err = new Error('request cancelled');
+				err.responseData = data;
+				err.dojoType='cancel';
 			}
+			return err;
 		});
 		var okHandler = ok ?
 			function(responseData){
@@ -53,21 +58,37 @@ define([
 			};
 		var errHandler = err ?
 			function(error){
+				error.responseData = data;
 				err(error, data);
 				throw error;
 			} :
 			function(error){
+				error.responseData = data;
 				throw error;
 			};
 
-		def.promise = def.then(okHandler, errHandler);
-		def.then = def.promise.then;
+		var promise = def.then(okHandler, errHandler);
+
+		if(fnlly){
+			def.then(
+				function(responseData){
+					fnlly(responseData);
+				},
+				function(error){
+					fnlly(data, error);
+					throw error;
+				}
+			);
+		}
+
+		def.promise = promise;
+		def.then = promise.then;
 
 		return def;
 	};
 
-	exports.addCommonMethods = function addCommonMethods(provider){
-		array.forEach(['GET', 'POST', 'PUT', 'DELETE'], function(method){
+	exports.addCommonMethods = function addCommonMethods(provider, methods){
+		array.forEach(methods||['GET', 'POST', 'PUT', 'DELETE'], function(method){
 			provider[(method == 'DELETE' ? 'DEL' : method).toLowerCase()] = function(url, options){
 				options = lang.delegate(options||{});
 				options.method = method;
@@ -76,33 +97,11 @@ define([
 		});
 	};
 
-	exports.createMatcher = function createMatcher(m, provider){
-		var matcher;
-		if(m.test){
-			// RegExp
-			matcher = function(url){
-				return m.test(url);
-			};
-		}else if(m.apply && m.call){
-			matcher = m;
-		}else{
-			matcher = function(url){
-				return url === m;
-			};
-		}
-
-		if(provider){
-			matcher.request = provider;
-		}
-
-		return matcher;
-	};
-
-	exports.parseArgs = function parseArgs(url, options){
+	exports.parseArgs = function parseArgs(url, options, skipData){
 		var data = options.data,
 			query = options.query;
 		
-		if(data){
+		if(data && !skipData){
 			if(typeof data == 'object'){
 				options.data = ioQuery.objectToQuery(data);
 			}
@@ -119,7 +118,7 @@ define([
 			query = 'request.preventCache=' + +(new Date);
 		}
 
-		if(query){
+		if(url && query){
 			url += (~url.indexOf('?') ? '&' : '?') + query;
 		}
 
