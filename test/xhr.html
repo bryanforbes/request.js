@@ -184,9 +184,22 @@
 							// t.t(td instanceof dojo.Deferred);
 							return d;
 						},
+						function xhrTimeout(t){
+							var d = new doh.Deferred();
+							xhr.post("xhrDummyMethod.php?delay=1", {
+								timeout: 100
+							}).then(function(response){
+									d.errback(false);
+								}, d.getTestCallback(function(error){
+									t.t(error instanceof Error);
+									t.is("timeout", error.dojoType);
+								}));
+							// t.t(td instanceof dojo.Deferred);
+							return d;
+						},
 						function xhrCancel(t){
 							var d = new doh.Deferred();
-							xhr.post("xhrDummyMethod.php")
+							xhr.post("xhrDummyMethod.php?delay=2")
 								.then(function(response){
 									d.errback(false);
 								}, d.getTestCallback(function(error){
