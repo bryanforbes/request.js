@@ -20,10 +20,10 @@ define([
 			var response = tif.response,
 				options = response.options;
 			dfd = tif.dfd;
-			if(!dfd || dfd.canceled || !tif.validCheck(dfd, response)){
+			if(!dfd || dfd.canceled || (tif.validCheck && !tif.validCheck(dfd, response))){
 				_inFlight.splice(i--, 1);
 				watch._onAction && watch._onAction();
-			}else if(tif.ioCheck(dfd, response)){
+			}else if(tif.ioCheck && tif.ioCheck(dfd, response)){
 				_inFlight.splice(i--, 1);
 				tif.resHandle(dfd, response);
 				watch._onAction && watch._onAction();
