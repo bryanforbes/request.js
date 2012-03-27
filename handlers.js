@@ -4,7 +4,7 @@ define([
 	'dojo/_base/array',
 	'dojo/has'
 ], function(JSON, kernel, array, has){
-	has.add('activex', typeof ActiveXObject != "undefined");
+	has.add('activex', typeof ActiveXObject != 'undefined');
 
 	var handleXML;
 	if(has('activex')){

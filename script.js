@@ -57,7 +57,7 @@ define([
 		}
 
 		//Check for finished "checkString" case.
-		return checkString && eval("typeof(" + checkString + ") != 'undefined'");
+		return checkString && eval('typeof(' + checkString + ') != "undefined"');
 	}
 
 	function script(url, options){

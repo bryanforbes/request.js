@@ -12,7 +12,7 @@ define([
 	'dojo/_base/window'
 ], function(module, require, watch, util, handlers, lang, query, has, dom, domConstruct, win){
 	var mid = module.id.replace(/[\/\.\-]/g, '_'),
-		onload = mid + "_onload",
+		onload = mid + '_onload',
 		global = this,
 		queue = [],
 		current = null;
@@ -47,9 +47,9 @@ define([
 				}
 
 				// restore original action + target
-				response._originalAction && formNode.setAttribute("action", response._originalAction);
+				response._originalAction && formNode.setAttribute('action', response._originalAction);
 				if(response._originalTarget){
-					formNode.setAttribute("target", response._originalTarget);
+					formNode.setAttribute('target', response._originalTarget);
 					formNode.target = response._originalTarget;
 				}
 			}
@@ -69,9 +69,9 @@ define([
 
 		if(!uri){
 			if(has('config-useXDomain') && !has('config-dojoBlankHtmlUrl')){
-				console.warn("dojo/request/iframe: When using cross-domain Dojo builds," +
-					" please save dojo/resources/blank.html to your domain and set dojoConfig.dojoBlankHtmlUrl" +
-					" to the path on your domain to blank.html");
+				console.warn('dojo/request/iframe: When using cross-domain Dojo builds,' +
+					' please save dojo/resources/blank.html to your domain and set dojoConfig.dojoBlankHtmlUrl' +
+					' to the path on your domain to blank.html');
 			}
 			uri = (has('config-dojoBlankHtmlUrl')||require.toUrl('dojo/resources/blank.html'));
 		}
@@ -98,7 +98,7 @@ define([
 				frame.contentWindow.location.replace(src);
 			}
 		}catch(e){
-			console.log("dojo/request/iframe.setSrc: ", e);
+			console.log('dojo/request/iframe.setSrc: ', e);
 		}
 	}
 
@@ -108,7 +108,7 @@ define([
 		}
 		var name = iframeNode.name;
 		if(name){
-			var iframes = win.doc.getElementsByTagName("iframe");
+			var iframes = win.doc.getElementsByTagName('iframe');
 			if(iframeNode.document && iframes[name].contentWindow && iframes[name].contentWindow.document){
 				return iframes[name].contentWindow.document;
 			}else if(win.doc.frames[name] && win.doc.frames[name].document){
@@ -178,29 +178,29 @@ define([
 
 				//IE requires going through getAttributeNode instead of just getAttribute in some form cases,
 				//so use it for all.  See #2844
-				var actionNode = formNode.getAttributeNode("action"),
-					methodNode = formNode.getAttributeNode("method"),
-					targetNode = formNode.getAttributeNode("target");
+				var actionNode = formNode.getAttributeNode('action'),
+					methodNode = formNode.getAttributeNode('method'),
+					targetNode = formNode.getAttributeNode('target');
 
 				if(response.url){
 					response._originalAction = actionNode ? actionNode.value : null;
 					if(actionNode){
 						actionNode.value = response.url;
 					}else{
-						formNode.setAttribute("action", response.url);
+						formNode.setAttribute('action', response.url);
 					}
 				}
 				if(methodNode){
 					methodNode.value = options.method;
 				}else{
-					formNode.setAttribute("method", options.method);
+					formNode.setAttribute('method', options.method);
 				}
 
 				response._originalTarget = targetNode ? targetNode.value : null;
 				if(targetNode){
 					targetNode.value = iframe._iframeName;
 				}else{
-					formNode.setAttribute("target", iframe._iframeName);
+					formNode.setAttribute('target', iframe._iframeName);
 				}
 				formNode.target = iframe._iframeName;
 
@@ -237,11 +237,11 @@ define([
 		};
 
 		if(options.method != 'GET' && options.method != 'POST'){
-			throw new Error(options.method + " not supported by dojo/request/iframe");
+			throw new Error(options.method + ' not supported by dojo/request/iframe');
 		}
 
 		if(!iframe._frame){
-			iframe._frame = iframe.create(iframe._iframeName, onload + "();");
+			iframe._frame = iframe.create(iframe._iframeName, onload + '();');
 		}
 
 		var dfd = util.deferred(
@@ -259,7 +259,7 @@ define([
 					if(handleAs != 'html'){
 						if(handleAs == 'xml'){
 							// IE6-8 have to parse the XML manually. See http://bugs.dojotoolkit.org/ticket/6334
-							if(doc.documentElement.tagName.toLowerCase() == "html"){
+							if(doc.documentElement.tagName.toLowerCase() == 'html'){
 								query('a', doc.documentElement).orphan();
 								var xmlText = doc.documentElement.innerText;
 								xmlText = xmlText.replace(/>\s+</g, '><');
@@ -268,7 +268,7 @@ define([
 								response.data = doc;
 							}
 						}else{
-							// "json" and "javascript" and "text"
+							// 'json' and 'javascript' and 'text'
 							response.text = doc.getElementsByTagName('textarea')[0].value; // text
 						}
 						handlers(response);
@@ -310,7 +310,7 @@ define([
 				if(response._finished){
 					dfd.resolve(response);
 				}else{
-					dfd.reject(new Error("Invalid dojo/request/iframe request state"));
+					dfd.reject(new Error('Invalid dojo/request/iframe request state'));
 				}
 			}
 		);
@@ -319,11 +319,11 @@ define([
 	}
 
 	try{
-		require("doh");
+		require('doh');
 		iframe._dfdQueue = queue;
 	}catch(e){}
 
-	iframe._iframeName = mid + "_IoIframe";
+	iframe._iframeName = mid + '_IoIframe';
 	iframe.create = create;
 	iframe.doc = doc;
 	iframe.setSrc = setSrc;
