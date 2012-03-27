@@ -710,7 +710,9 @@ define([
 	}
 	*/
 
-	dojo._isDocumentOk = _xhr.isDocumentOk;
+	dojo._isDocumentOk = function(x){
+		return util.checkStatus(x.status);
+	};
 
 	dojo._getText = function(url){
 		var result;
