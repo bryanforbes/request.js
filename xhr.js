@@ -11,21 +11,14 @@ define([
 	function _ioCheck(/*Deferred*/dfd, response){
 		return 4 == response.xhr.readyState; //boolean
 	}
-	function isDocumentOk(xhr){
-		var stat = xhr.status || 0;
-		return (stat >= 200 && stat < 300) || // allow any 2XX response code
-			stat == 304 ||                 // or, get it out of the cache
-			stat == 1223 ||                // or, Internet Explorer mangled the status code
-			!stat;                         // or, we're Titanium/browser chrome/chrome extension requesting a local file
-	}
 	function _resHandle(/*Deferred*/dfd, response){
 		var _xhr = response.xhr;
-		if(xhr.isDocumentOk(_xhr)){
+		if(util.checkStatus(_xhr.status)){
 			dfd.resolve(response);
 		}else{
 			var err = new Error('Unable to load ' + response.url + ' status: ' + _xhr.status);
 			response.status = _xhr.status;
-			if(response.options.handleAs == "xml"){
+			if(response.options.handleAs == 'xml'){
 				response.response = _xhr.responseXML;
 			}else{
 				response.text = _xhr.responseText;
@@ -45,7 +38,7 @@ define([
 	function _deferOk(response){
 		// summary: okHandler function for util.deferred call.
 		var _xhr = response.xhr;
-		if(response.options.handleAs == "xml"){
+		if(response.options.handleAs == 'xml'){
 			response.data = _xhr.responseXML;
 		}else{
 			response.text = _xhr.responseText;
@@ -96,7 +89,7 @@ define([
 		}
 
 		var data = options.data,
-			sync = !!options.sync,
+			sync = !options.sync,
 			method = options.method;
 
 		// IE6 won't let you call apply() on the native function.
@@ -165,7 +158,6 @@ define([
 		}
 	}
 
-	xhr.isDocumentOk = isDocumentOk;
 	util.addCommonMethods(xhr);
 
 	return xhr;

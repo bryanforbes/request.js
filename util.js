@@ -139,4 +139,12 @@ define([
 
 		return [url, options];
 	};
+
+	exports.checkStatus = function(stat){
+		stat = stat || 0;
+		return (stat >= 200 && stat < 300) || // allow any 2XX response code
+			stat == 304 ||                 // or, get it out of the cache
+			stat == 1223 ||                // or, Internet Explorer mangled the status code
+			!stat;                         // or, we're Titanium/browser chrome/chrome extension requesting a local file
+	};
 });
