@@ -61,12 +61,9 @@ define([
 	}
 
 	function script(url, options){
-		var args = util.parseArgs(url, util.deepCopy({}, options));
-
-		var response = {
-			url: url = args[0],
-			options: options = args[1]
-		};
+		var response = util.parseArgs(url, util.deepCopy({}, options));
+		url = response.url;
+		options = response.options;
 
 		var dfd = util.deferred(
 			response,

@@ -137,7 +137,10 @@ define([
 			url += (~url.indexOf('?') ? '&' : '?') + query;
 		}
 
-		return [url, options];
+		return {
+			url: url,
+			options: options
+		};
 	};
 
 	exports.checkStatus = function(stat){

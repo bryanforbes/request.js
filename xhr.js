@@ -140,12 +140,9 @@ define([
 		//		Sends an HTTP request with the given URL.
 		//	url:
 		//		URL to request
-		var args = util.parseArgs(url, util.deepCreate(defaultOptions, options));
-
-		var response = {
-			url: url = args[0],
-			options: options = args[1]
-		};
+		var response = util.parseArgs(url, util.deepCreate(defaultOptions, options));
+		url = response.url;
+		options = response.options;
 
 		var remover,
 			fnlly = function(){

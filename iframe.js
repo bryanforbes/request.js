@@ -222,17 +222,15 @@ define([
 		method: 'POST'
 	};
 	function iframe(url, options){
-		var args = util.parseArgs(url, util.deepCreate(defaultOptions, options), true);
+		var response = util.parseArgs(url, util.deepCreate(defaultOptions, options), true);
+		url = response.url;
+		options = response.options;
 
-		var response = {
-			url: url = args[0],
-			options: options = args[1],
-			_callNext: function(){
-				if(!this._calledNext){
-					this._calledNext = true;
-					current = null;
-					iframe._fireNextRequest();
-				}
+		response._callNext = function(){
+			if(!this._calledNext){
+				this._calledNext = true;
+				current = null;
+				iframe._fireNextRequest();
 			}
 		};
 
